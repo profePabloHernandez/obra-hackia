@@ -109,12 +109,33 @@ input:focus,select:focus,textarea:focus{border-color:var(--plano);outline:none}
 .hoja input{font-family:var(--f-mono);text-transform:uppercase;letter-spacing:.12em;font-weight:600}
 
 /* gafete y placa */
-.gafete{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
-.gafete .top{background:var(--ina);color:#fff;padding:12px 16px;font-family:var(--f-disp);font-weight:800;font-size:1.1rem;letter-spacing:.06em;text-transform:uppercase;display:flex;justify-content:space-between;gap:8px}
-.gafete .cuerpo{padding:16px;display:flex;gap:16px;align-items:center}
-.casco{flex:none;width:72px;height:72px}
-.gafete .num{font-family:var(--f-mono);font-size:.85rem;color:var(--muted)}
-.gafete .area{font-family:var(--f-disp);font-weight:800;font-size:1.7rem;line-height:1.05}
+.gaf-wrap{display:flex;flex-direction:column;align-items:center}
+.cinta{display:block;width:120px;height:56px;margin-bottom:-10px;position:relative;z-index:1}
+.gafete{width:min(290px,100%);background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 12px 28px rgba(13,27,42,.18);display:flex;flex-direction:column}
+.gaf-cab{background:var(--ina);color:#FFFFFF;text-align:center;padding:22px 16px 40px;position:relative}
+.gaf-cab::before{content:"";position:absolute;top:9px;left:50%;width:46px;height:8px;margin-left:-23px;border-radius:4px;background:var(--bg)}
+.gaf-ina{font-family:var(--f-disp);font-weight:800;font-size:2.2rem;letter-spacing:.12em;line-height:1}
+.gaf-ev{font-family:var(--f-mono);font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;opacity:.85}
+.gaf-foto{width:118px;height:138px;margin:-30px auto 0;border-radius:10px;border:4px solid var(--surface);background:var(--plano-soft);overflow:hidden;position:relative;z-index:1}
+.gaf-foto svg{display:block;width:100%;height:100%}
+.gaf-num{font-family:var(--f-mono);font-size:.78rem;color:var(--muted);text-align:center;margin-top:6px}
+.gaf-datos{padding:10px 20px 16px;display:flex;flex-direction:column;gap:10px;text-align:center}
+.gaf-et{font-family:var(--f-mono);font-size:.66rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block}
+.gaf-val{font-family:var(--f-disp);font-weight:800;font-size:1.45rem;line-height:1.05;overflow-wrap:anywhere}
+.gaf-val.vacio{color:var(--line)}
+.gaf-rol{font-family:var(--f-disp);font-weight:800;font-size:1.3rem;letter-spacing:.14em;text-transform:uppercase;text-align:center;padding:9px 12px;background:var(--line);color:var(--muted)}
+.gaf-rol:not(.docente):not(.administrativo){font-size:.95rem;letter-spacing:.08em}
+.gaf-rol.docente{background:var(--accent);color:var(--accent-ink)}
+.gaf-rol.administrativo{background:var(--plano);color:var(--surface)}
+.gaf-barras{height:26px;margin:12px 28px 14px;background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 4px,var(--ink) 4px 5px,transparent 5px 8px,var(--ink) 8px 11px,transparent 11px 13px);opacity:.75}
+.tipo{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tipo label{display:block;cursor:pointer}
+.tipo input{position:absolute;opacity:0;pointer-events:none}
+.tipo span{display:flex;align-items:center;justify-content:center;min-height:52px;border:2px solid var(--line);border-radius:10px;background:var(--surface);font-weight:700;text-align:center;padding:6px}
+.tipo input:checked+span{border-color:var(--plano);background:var(--plano-soft)}
+.tipo input:focus-visible+span{outline:3px solid var(--accent);outline-offset:2px}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+legend{font-weight:700;padding:0;margin-bottom:6px}
 
 /* actividades */
 .ops{display:flex;flex-direction:column;gap:8px}
@@ -194,6 +215,14 @@ body.proy main,body.proy .hbar{max-width:1400px}
     <span class="et">Antes de entrar a la obra</span>
     <p>Llene su gafete. No le pedimos su nombre: lo que escriba aquí se usa para construir la primera versión de la política.</p>
   </div>
+  <div class="gaf-wrap" id="gPrev"></div>
+  <fieldset class="campo">
+    <legend>Usted participa como</legend>
+    <div class="tipo">
+      <label><input type="radio" name="tipo" id="tDoc" value="Docente"><span>Docente</span></label>
+      <label><input type="radio" name="tipo" id="tAdm" value="Administrativo"><span>Administrativo</span></label>
+    </div>
+  </fieldset>
   <div class="campo">
     <label for="iUR">Unidad Regional donde trabaja</label>
     <select id="iUR">
@@ -205,8 +234,9 @@ body.proy main,body.proy .hbar{max-width:1400px}
     </select>
   </div>
   <div class="campo">
-    <label for="iArea">Su área o núcleo de formación</label>
-    <input id="iArea" type="text" maxlength="40" autocomplete="off" placeholder="Por ejemplo: Eléctrico, Turismo, Salud">
+    <label for="iArea">Área, núcleo o dependencia</label>
+    <input id="iArea" type="text" maxlength="40" autocomplete="off" placeholder="Eléctrico, Turismo, Recursos Humanos…">
+    <p class="nota">Si es docente, escriba su núcleo o área. Si es personal administrativo, la dependencia donde trabaja.</p>
   </div>
   <p class="err" id="eInicio" role="alert"></p>
   <button type="button" class="btn" id="bEntrar">Ponerme el casco</button>
@@ -215,13 +245,7 @@ body.proy main,body.proy .hbar{max-width:1400px}
 <!-- GAFETE -->
 <section class="pant" id="p-gafete" hidden>
   <span class="eyebrow">Su gafete de obra</span>
-  <div class="gafete">
-    <div class="top"><span>Obra INA · HackIA</span><span id="gNum">N.º 000</span></div>
-    <div class="cuerpo">
-      <svg class="casco" viewBox="0 0 72 72" aria-hidden="true"><rect width="72" height="72" rx="12" fill="var(--accent-soft)"/><path d="M14 46 Q14 22 36 20 Q58 22 58 46 Z" fill="var(--accent)"/><rect x="10" y="44" width="52" height="7" rx="3" fill="var(--accent)"/><rect x="33" y="18" width="6" height="26" rx="3" fill="var(--accent-ink)" opacity=".25"/></svg>
-      <div><span class="num" id="gUR">Unidad Regional</span><div class="area" id="gArea">Área</div></div>
-    </div>
-  </div>
+  <div class="gaf-wrap" id="gFinal"></div>
   <div class="caja concepto">
     <span class="et">Cómo funciona</span>
     <p>El edificio empieza en planos. Cada vez que se diga una <strong>palabra clave</strong> en voz alta, escríbala para colocar el bloque siguiente. En cada bloque hay una actividad corta: sus respuestas son material de construcción.</p>
@@ -652,7 +676,7 @@ function verFin(){
   pintarAvance(); ir("p-fin");
 }
 function pintarPlaca(){
-  $("pQuien").textContent=(S.area||"Docente INA")+(S.ur?" · "+S.ur:"");
+  $("pQuien").textContent=(S.tipo?S.tipo+" · ":"")+(S.area||"INA")+(S.ur?" · "+S.ur:"");
   $("pFrase").textContent="«"+S.comp+"»";
   $("pFecha").textContent="HackIA · "+new Date().toLocaleDateString("es-CR",{day:"numeric",month:"long",year:"numeric"});
   $("placa").hidden=false;$("pNota").hidden=false;
@@ -666,17 +690,38 @@ $("bSellar").addEventListener("click",function(){
 $("bVolverObra").addEventListener("click",verObra);
 
 /* ===================== ENTRADA ===================== */
+function tipoElegido(){var r=document.querySelector('input[name="tipo"]:checked');return r?r.value:""}
+function gafeteHTML(d){
+  function val(v,ph){return '<span class="gaf-val'+(v?'':' vacio')+'">'+esc(v||ph)+'</span>'}
+  return '<svg class="cinta" viewBox="0 0 120 56" aria-hidden="true">'+
+    '<path d="M18 0 L52 40 L68 40 L102 0 L86 0 L60 30 L34 0 Z" fill="var(--ina)"/>'+
+    '<rect x="50" y="36" width="20" height="14" rx="3" fill="var(--concreto)"/><rect x="55" y="46" width="10" height="10" rx="2" fill="var(--concreto-osc)"/></svg>'+
+    '<div class="gafete" role="img" aria-label="Gafete: '+esc((d.tipo||"")+" "+(d.ur||"")+" "+(d.area||""))+'">'+
+    '<div class="gaf-cab"><div class="gaf-ina">INA</div><div class="gaf-ev">HackIA 2026</div></div>'+
+    '<div class="gaf-foto"><svg viewBox="0 0 118 138" aria-hidden="true"><rect width="118" height="138" fill="var(--plano-soft)"/>'+
+    '<circle cx="59" cy="52" r="25" fill="var(--concreto)"/><path d="M10 138 Q12 92 59 90 Q106 92 108 138 Z" fill="var(--concreto)"/></svg></div>'+
+    '<div class="gaf-num">N.º '+(d.num||"000")+'</div>'+
+    '<div class="gaf-datos"><div><span class="gaf-et">Unidad Regional</span>'+val(d.ur,"Su Unidad Regional")+'</div>'+
+    '<div><span class="gaf-et">Área, núcleo o dependencia</span>'+val(d.area,"Su área")+'</div></div>'+
+    '<div class="gaf-barras" aria-hidden="true"></div>'+
+    '<div class="gaf-rol '+(d.tipo?d.tipo.toLowerCase():"")+'">'+esc(d.tipo||"Docente o administrativo")+'</div></div>';
+}
+function previaGafete(){
+  $("gPrev").innerHTML=gafeteHTML({tipo:tipoElegido(),ur:$("iUR").value,area:($("iArea").value||"").trim(),num:S.num});
+}
+if(!S.num)S.num=100+Math.floor(Math.random()*900);
+["iUR","iArea","tDoc","tAdm"].forEach(function(id){$(id).addEventListener("input",previaGafete);$(id).addEventListener("change",previaGafete)});
 $("bEntrar").addEventListener("click",function(){
-  var ur=$("iUR").value,area=($("iArea").value||"").trim();
+  var tipo=tipoElegido(),ur=$("iUR").value,area=($("iArea").value||"").trim();
+  if(!tipo){$("eInicio").textContent="Elija si participa como docente o como personal administrativo.";$("tDoc").focus();return}
   if(!ur){$("eInicio").textContent="Elija su Unidad Regional.";$("iUR").focus();return}
-  if(!area){$("eInicio").textContent="Escriba su área o núcleo de formación.";$("iArea").focus();return}
+  if(!area){$("eInicio").textContent="Escriba su área, núcleo o dependencia.";$("iArea").focus();return}
   $("eInicio").textContent="";
-  S.ur=ur;S.area=area;
-  if(!S.num)S.num=100+Math.floor(Math.random()*900);
+  S.tipo=tipo;S.ur=ur;S.area=area;
   if(!S.id)S.id=Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8);
   save();sincronizar();pintarGafete();ir("p-gafete");
 });
-function pintarGafete(){$("gNum").textContent="N.º "+S.num;$("gUR").textContent="Unidad Regional "+S.ur;$("gArea").textContent=S.area}
+function pintarGafete(){$("gFinal").innerHTML=gafeteHTML({tipo:S.tipo,ur:S.ur,area:S.area,num:S.num})}
 $("bVerObra").addEventListener("click",verObra);
 
 /* ===================== PROYECTOR ===================== */
@@ -747,7 +792,7 @@ var CONFIG={ENDPOINT:"https://script.google.com/macros/s/AKfycbxBz1KJEaeMC4ew1DC
 if(/claude|anthropic/i.test(location.hostname)||location.protocol==="file:"||location.protocol==="about:"){CONFIG.ENDPOINT=""}
 var tEnvio=null;
 function paquete(){
-  var p={id:S.id,ur:S.ur,area:S.area,avance:(S.cerrados+1)+"/6",compromiso:S.comp||""};
+  var p={id:S.id,ur:S.ur,area:(S.tipo?S.tipo+" · ":"")+S.area,avance:(S.cerrados+1)+"/6",compromiso:S.comp||""};
   p.uso=S.resp.uso!==undefined?B[0].act[0].ops[S.resp.uso].t:"";
   p.preocupa=S.resp.preocupa||"";
   p.columna=S.resp.columna!==undefined?B[1].act[0].ops[S.resp.columna].t:"";
@@ -768,7 +813,9 @@ $("artePortada").innerHTML=edificio(0,-1);
 function arrancar(){
   if((location.hash||"").toLowerCase().indexOf("proyector")>-1){verProy();return}
   if(S.ur&&S.area){pintarGafete();verObra()}
-  else{$("iUR").value=S.ur||"";$("iArea").value=S.area||"";pintarAvance();ir("p-inicio")}
+  else{$("iUR").value=S.ur||"";$("iArea").value=S.area||"";
+    if(S.tipo){var r=document.querySelector('input[name="tipo"][value="'+S.tipo+'"]');if(r)r.checked=true}
+    previaGafete();pintarAvance();ir("p-inicio")}
 }
 arrancar();
 })();
