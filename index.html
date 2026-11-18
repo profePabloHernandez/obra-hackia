@@ -45,6 +45,7 @@ h3{font-size:1.35rem;font-weight:700}
 p{margin:0}
 button,input,select,textarea{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+h1[tabindex="-1"]:focus,h2[tabindex="-1"]:focus{outline:none}
 .saltar{position:absolute;left:-999px}
 .saltar:focus{left:16px;top:8px;z-index:20;background:var(--surface);padding:8px 12px}
 
@@ -111,7 +112,22 @@ input:focus,select:focus,textarea:focus{border-color:var(--plano);outline:none}
 .hoja input{font-family:var(--f-mono);text-transform:uppercase;letter-spacing:.12em;font-weight:600}
 
 /* gafete y placa */
-.gaf-wrap{display:flex;flex-direction:column;align-items:center}
+.gaf-wrap{display:flex;flex-direction:column;align-items:center;perspective:700px}
+.gaf-wrap>.gafete,.gaf-wrap>.cinta{transform-origin:50% -46px;animation:vaiven 6s ease-in-out infinite}.gaf-wrap>.cinta{transform-origin:50% 0}
+@keyframes vaiven{0%,100%{transform:rotateZ(-2.2deg) rotateY(-9deg)}50%{transform:rotateZ(2.2deg) rotateY(9deg)}}
+@media (prefers-reduced-motion: reduce){.gaf-wrap>.gafete,.gaf-wrap>.cinta{animation:none}}
+/* casco que cae */
+.casco{position:fixed;inset:0;z-index:40;display:grid;place-items:center;pointer-events:none;background:rgba(13,27,42,.18);animation:cascoFondo 2.6s ease forwards}
+.casco svg{width:min(56vw,260px);height:auto;filter:drop-shadow(0 18px 18px rgba(13,27,42,.35));animation:cascoCae 2.6s cubic-bezier(.3,.7,.3,1) forwards}
+@keyframes cascoCae{0%{transform:translateY(-75vh) rotate(-14deg)}38%{transform:translateY(0) rotate(4deg)}48%{transform:translateY(-6vh) rotate(-2deg)}58%{transform:translateY(0) rotate(0)}82%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(0) scale(.85)}}
+@keyframes cascoFondo{0%,80%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.casco svg{animation:cascoFondo 1.6s ease forwards}}
+/* semáforo en el teléfono */
+.cat.sem0{background:#D9F2E0;border-color:#2C9A4B;color:#14361F}
+.cat.sem1{background:#FFF1C4;border-color:#E0A800;color:#3D2C00}
+.cat.sem2{background:#FADCD6;border-color:#C9402B;color:#43140C}
+.cat.sem.si{outline:3px solid var(--ok);outline-offset:2px}
+.cat.sem.no{outline:3px dashed var(--bad);outline-offset:2px}
 .cinta{display:block;width:120px;height:56px;margin-bottom:-10px;position:relative;z-index:1}
 .gafete{width:min(290px,100%);background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 12px 28px rgba(13,27,42,.18);display:flex;flex-direction:column}
 .gaf-cab{background:var(--ina);color:#FFFFFF;text-align:center;padding:22px 16px 40px;position:relative}
@@ -150,6 +166,7 @@ legend{font-weight:700;padding:0;margin-bottom:6px}
 .cats{display:flex;flex-wrap:wrap;gap:6px}
 .cat{flex:1 1 auto;min-height:44px;border-radius:8px;border:2px solid var(--line);background:var(--surface);font-weight:700;cursor:pointer;padding:6px 10px}
 .cat.si{border-color:var(--ok);background:var(--ok-soft)}
+.cat .mk{font-weight:800;margin-right:4px}
 .cat.no{border-color:var(--bad);background:var(--bad-soft)}
 .cat:disabled{cursor:default}
 .item .fb.ok{background:var(--ok-soft)}
@@ -160,9 +177,17 @@ legend{font-weight:700;padding:0;margin-bottom:6px}
 .tejas .el{font-family:var(--f-mono);font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:block}
 .principios{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:2px}
 
-.placa{background:linear-gradient(160deg,#C9A24A,#8E6A1F);color:#1E1400;border-radius:12px;padding:20px;text-align:center;display:flex;flex-direction:column;gap:6px;box-shadow:inset 0 0 0 3px rgba(255,255,255,.35)}
-.placa .ce{font-family:var(--f-mono);font-size:.78rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
-.placa .fr{font-family:var(--f-disp);font-size:1.5rem;font-weight:700;line-height:1.15}
+.piedra{position:relative;padding:34px 26px 40px;border-radius:46% 54% 40% 60% / 22% 26% 74% 78%;
+  background:radial-gradient(circle at 22% 28%,rgba(255,255,255,.22) 0 2px,transparent 3px),radial-gradient(circle at 70% 64%,rgba(0,0,0,.18) 0 3px,transparent 4px),radial-gradient(circle at 40% 82%,rgba(255,255,255,.16) 0 2px,transparent 3px),radial-gradient(circle at 84% 22%,rgba(0,0,0,.14) 0 2px,transparent 3px),radial-gradient(ellipse at 30% 20%,#A9A49B,#7D776E 55%,#5E5952);
+  background-size:38px 38px,52px 52px,44px 44px,61px 61px,100% 100%;
+  box-shadow:inset -10px -14px 26px rgba(0,0,0,.35),inset 8px 10px 18px rgba(255,255,255,.18),0 14px 26px rgba(13,27,42,.3)}
+.placa{position:relative;background:linear-gradient(145deg,#F3D98B 0%,#D4AD4E 28%,#B88A2C 52%,#E4C46E 74%,#A9791F 100%);color:#5A4210;border-radius:6px;padding:26px 22px;text-align:center;display:flex;flex-direction:column;gap:8px;
+  box-shadow:inset 0 0 0 2px rgba(255,246,214,.55),inset 0 0 0 7px rgba(122,86,18,.35),inset 0 0 0 9px rgba(255,236,170,.45),0 4px 10px rgba(0,0,0,.45)}
+.placa::before,.placa::after{content:"";position:absolute;top:12px;width:10px;height:10px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FFF1C2,#8E6A1F 70%);box-shadow:0 1px 1px rgba(0,0,0,.4)}
+.placa::before{left:12px}.placa::after{right:12px}
+.placa .ce,.placa .fr{text-shadow:0 1px 0 rgba(255,244,205,.75),0 -1px 0 rgba(70,48,6,.55)}
+.placa .ce{font-family:var(--f-mono);font-size:.76rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6A4D12}
+.placa .fr{font-family:Georgia,"Times New Roman",serif;font-size:1.45rem;font-weight:700;font-style:italic;line-height:1.25;color:#4E390C;padding:6px 0}
 
 /* panel del facilitador */
 body.ancho main,body.ancho .hbar{max-width:1200px}
@@ -213,6 +238,18 @@ body.quieto.pantalla{cursor:none}
 .nube-pal span{font-family:var(--f-disp);font-weight:800;line-height:1;transition:font-size .6s ease;overflow-wrap:anywhere}
 .nube-vacia{color:var(--muted);font-size:1.2rem;text-align:center}
 .enviada{display:flex;gap:10px;align-items:center}
+/* palabras acumuladas en la pantalla */
+.pan-palabras{position:absolute;left:0;right:0;top:0;height:8vh;display:flex;align-items:center;gap:1.2vh;padding:0 3vw;background:var(--surface);border-bottom:.3vh solid var(--line);z-index:2;overflow:hidden}
+.pan-palabras .et2{font-family:var(--f-mono);font-size:1.7vh;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap;margin-right:.6vh}
+.pal{display:flex;flex-direction:column;justify-content:center;padding:.5vh 1.4vh;border-radius:1vh;background:var(--plano-soft);border:.25vh solid transparent;white-space:nowrap}
+.pal small{font-family:var(--f-mono);font-size:1.4vh;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.pal b{font-family:var(--f-mono);font-size:2.8vh;font-weight:600;letter-spacing:.12em;line-height:1.05}
+.pal.nueva{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.pal.nueva small{color:var(--accent-ink)}
+#p-pantalla.con-palabras .pan-edif,#p-pantalla.con-palabras .pan-nube{top:8vh}
+/* miniatura del panel = lo que ve la sala */
+.mini{position:relative;width:100%;aspect-ratio:16/9;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.mini iframe{position:absolute;left:0;top:0;width:1280px;height:720px;border:0;transform-origin:0 0;pointer-events:none}
 /* resultados en vivo */
 .res{flex:1;display:flex;flex-direction:column;justify-content:center;gap:2.4vh;min-height:0}
 .res-sub{font-family:var(--f-mono);font-size:2.2vh;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
@@ -220,6 +257,19 @@ body.quieto.pantalla{cursor:none}
 .res-bar{height:4.4vh;background:var(--plano-soft);border-radius:1vh;overflow:hidden}
 .res-bar i{display:block;height:100%;background:var(--accent);border-radius:1vh;transition:width .7s ease}
 .res-n{font-family:var(--f-mono);font-weight:600;text-align:right}
+.casos{display:grid;grid-template-columns:1fr 1fr;gap:1.2vh 4vh}
+.ronda{display:flex;flex-direction:column;gap:1.1vh}
+.caso{display:flex;flex-direction:column;gap:.5vh;font-size:2vh;font-weight:700}
+.apilada{display:flex;height:3.6vh;border-radius:.8vh;overflow:hidden;background:var(--plano-soft)}
+.apilada span{display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:1.6vh;font-weight:600;color:#FFFFFF;white-space:nowrap;overflow:hidden;transition:flex-grow .7s}
+.apilada span.ok{box-shadow:inset 0 0 0 .4vh #FFFFFF}
+.leyenda{display:flex;flex-wrap:wrap;gap:.6vh 2vh;font-size:1.8vh;color:var(--muted);font-weight:600}
+.leyenda i{display:inline-block;width:1.8vh;height:1.8vh;border-radius:.4vh;vertical-align:-.3vh;margin-right:.6vh}
+.semaforos{display:grid;grid-template-columns:repeat(4,1fr);gap:3vw;align-items:start;flex:1;padding-top:2vh}
+.sem-caso{display:flex;flex-direction:column;align-items:center;gap:1.6vh;text-align:center}
+.sem-caso svg{height:38vh;width:auto;display:block}
+.sem-caso p{font-size:2.2vh;font-weight:700;line-height:1.2}
+.sem-caso .guia{font-family:var(--f-mono);font-size:1.7vh;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .res.compacta{gap:1.2vh}.res.compacta .res-fila{font-size:2.4vh}.res.compacta .res-bar{height:3vh}
 </style>
 
@@ -241,13 +291,12 @@ body.quieto.pantalla{cursor:none}
 
 <!-- INICIO -->
 <section class="pant" id="p-inicio">
-  <div class="lienzo" id="artePortada"></div>
   <span class="eyebrow">HackIA · Política de IA del INA</span>
   <h1>Construyamos la política</h1>
   <p class="intro">Seis bloques y una hora y media para levantar, entre todas las personas de esta sala, el edificio de la política de inteligencia artificial del INA.</p>
   <div class="caja">
     <span class="et">Antes de entrar a la obra</span>
-    <p>Llene su gafete. No le pedimos su nombre: lo que escriba aquí se usa para construir la primera versión de la política.</p>
+    <p>Llene su gafete. No le pedimos su nombre: lo que escriba aquí se usa para construir la primera versión del borrador de la política.</p>
   </div>
   <div class="gaf-wrap" id="gPrev"></div>
   <fieldset class="campo">
@@ -282,7 +331,7 @@ body.quieto.pantalla{cursor:none}
   <div class="gaf-wrap" id="gFinal"></div>
   <div class="caja concepto">
     <span class="et">Cómo funciona</span>
-    <p>El edificio empieza en planos. Cada vez que se diga una <strong>palabra clave</strong> en voz alta, escríbala para colocar el bloque siguiente. En cada bloque hay una actividad corta: sus respuestas son material de construcción.</p>
+    <p>El edificio empieza en planos. Cada vez que se mencione una <strong>palabra clave</strong> (también aparece en la pantalla), escríbala para colocar el bloque siguiente. En cada bloque hay una actividad corta: sus respuestas son material de construcción.</p>
   </div>
   <button type="button" class="btn" id="bVerObra">Ver la obra</button>
 </section>
@@ -327,11 +376,13 @@ body.quieto.pantalla{cursor:none}
     <textarea id="iComp" maxlength="240" placeholder="Cuando vuelva a mi aula, yo…"></textarea>
   </div>
   <button type="button" class="btn" id="bSellar">Develar mi placa</button>
-  <div class="placa" id="placa" hidden>
-    <span class="ce">Placa de inauguración · Política de IA del INA</span>
-    <span class="ce" id="pQuien"></span>
-    <p class="fr" id="pFrase"></p>
-    <span class="ce" id="pFecha"></span>
+  <div class="piedra" id="placa" hidden>
+    <div class="placa">
+      <span class="ce">Placa de inauguración · Política de IA del INA</span>
+      <span class="ce" id="pQuien"></span>
+      <p class="fr" id="pFrase"></p>
+      <span class="ce" id="pFecha"></span>
+    </div>
   </div>
   <p class="nota" id="pNota" hidden>Tómele una foto a la pantalla. Es suya.</p>
   <button type="button" class="btn sec" id="bVolverObra">Ver la obra</button>
@@ -358,7 +409,7 @@ body.quieto.pantalla{cursor:none}
   <h2 id="adTit">El edificio en planos</h2>
   <div class="ad-grid">
     <div class="ad-col">
-      <div class="lienzo" id="adArte"></div>
+      <div class="mini" id="adMini"><iframe id="adIframe" title="Lo que ve la sala en la pantalla de proyección" tabindex="-1" aria-hidden="true"></iframe></div>
       <p class="ad-estado" id="adEstado"></p>
     </div>
     <div class="ad-col">
@@ -412,6 +463,7 @@ body.quieto.pantalla{cursor:none}
 
 <!-- PANTALLA DE PROYECCIÓN -->
 <section class="pant" id="p-pantalla" hidden>
+  <div class="pan-palabras" id="panPal" hidden></div>
   <div class="pan-edif" id="panArte"></div>
   <div class="pan-nube" id="panNube" hidden>
     <div class="nube-cab"><h3>¿Qué le preocupa de la IA en el aula?</h3><span class="nube-cnt" id="nubeCnt"></span></div>
@@ -676,7 +728,7 @@ function pintarHoja(){
     $("bIrFin").addEventListener("click",verFin);return;
   }
   c.innerHTML='<span class="et">Siguiente: bloque '+(n+1)+' · '+B[n].nom+'</span>'+
-    '<label for="iClave">Escriba la palabra clave que se dijo en voz alta</label>'+
+    '<label for="iClave">Escriba la palabra mencionada</label><p class="nota">También está en la pantalla, arriba, junto a su bloque.</p>'+
     '<input id="iClave" type="text" maxlength="14" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="PALABRA">'+
     '<p class="err" id="eClave" role="alert"></p>'+
     '<button type="button" class="btn" id="bAbrir">Colocar el bloque</button>';
@@ -689,7 +741,7 @@ function abrir(){
   var n=S.i+1;
   if(!window.crypto||!crypto.subtle){$("eClave").textContent="Este navegador no puede revisar la palabra. Abra la actividad en Chrome o Safari actualizados.";return}
   sha("obra-ina|"+normal($("iClave").value)).then(function(h){
-    if(h!==B[n].h){$("eClave").textContent="Esa no es la palabra. Escúchela otra vez y vuelva a intentar.";avisar("La palabra no es correcta.");return}
+    if(h!==B[n].h){$("eClave").textContent="Esa no es la palabra. Revísela en la pantalla y vuelva a intentar.";avisar("La palabra no es correcta.");return}
     S.i=n;save();animar=n;avisar("Bloque "+(n+1)+" colocado: "+B[n].nom);
     verBloque(n);
   });
@@ -746,7 +798,9 @@ function pintarAct(i){
         h+='<div class="item"><p class="q">'+esc(it.t)+'</p><div class="cats">';
         a.cats.forEach(function(ct,ci){
           var cls=dado===undefined?"":(ci===it.ok?"si":(ci===dado?"no":""));
-          h+='<button type="button" class="cat '+cls+'" data-a="'+key+'" data-it="'+ii+'" data-c="'+ci+'"'+(dado!==undefined?' disabled':'')+'>'+esc(ct)+'</button>';
+          var mk=dado===undefined?"":(ci===it.ok?'<span class="mk" aria-label="correcta">✓</span>':(ci===dado?'<span class="mk" aria-label="incorrecta">✗</span>':""));
+          if(key==="semaforo")cls+=" sem sem"+ci;
+          h+='<button type="button" class="cat '+cls+'" data-a="'+key+'" data-it="'+ii+'" data-c="'+ci+'"'+(dado!==undefined?' disabled':'')+'>'+mk+esc(ct)+'</button>';
         });
         h+='</div><p class="fb '+(dado===undefined?"":(dado===it.ok?"ok":"mal"))+'">'+(dado!==undefined?esc(it.fb):'')+'</p></div>';
       });
@@ -844,8 +898,13 @@ $("bEntrar").addEventListener("click",function(){
   $("eInicio").textContent="";
   S.tipo=tipo;S.ur=ur;S.area=area;
   if(!S.id)S.id=Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8);
-  save();sincronizar();pintarGafete();ir("p-gafete");
+  save();sincronizar();pintarGafete();ir("p-gafete");casco();
 });
+function casco(){
+  var d=document.createElement("div");d.className="casco";d.setAttribute("aria-hidden","true");
+  d.innerHTML='<svg viewBox="0 0 240 170"><ellipse cx="120" cy="150" rx="112" ry="14" fill="#C98F00"/><path d="M22 146 Q20 52 120 40 Q220 52 218 146 Z" fill="#F2B705"/><path d="M104 42 Q120 30 136 42 L140 146 L100 146 Z" fill="#FFD23F"/><path d="M60 140 Q62 82 92 58" stroke="#FFE27A" stroke-width="8" fill="none" stroke-linecap="round" opacity=".7"/><rect x="18" y="138" width="204" height="14" rx="7" fill="#E0A800"/><text x="174" y="118" text-anchor="middle" font-family="Barlow Condensed,Arial Narrow,sans-serif" font-weight="800" font-size="26" fill="#0F4C8A">INA</text></svg>';
+  document.body.appendChild(d);setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d)},2700);
+}
 function pintarGafete(){$("gFinal").innerHTML=gafeteHTML({tipo:S.tipo,ur:S.ur,area:S.area,num:S.num})}
 $("bVerObra").addEventListener("click",verObra);
 
@@ -899,9 +958,16 @@ function refrescar(antes){
 }
 window.addEventListener("storage",function(ev){if(ev.key==="obra-proy"){var antes=P.n;leerP();refrescar(antes)}});
 
-function verAdmin(){leerP();pintarAdmin(-1);ir("p-admin")}
+function verAdmin(){leerP();pintarAdmin(-1);ir("p-admin");montarMini()}
+function montarMini(){
+  var f=$("adIframe");
+  if(!f.getAttribute("src"))f.setAttribute("src",location.href.split("#")[0]+"#pantalla");
+  escalarMini();
+}
+function escalarMini(){var c=$("adMini");if(!c||!c.clientWidth)return;$("adIframe").style.transform="scale("+(c.clientWidth/1280)+")"}
+window.addEventListener("resize",escalarMini);
+try{new ResizeObserver(escalarMini).observe($("adMini"))}catch(e){}
 function pintarAdmin(antes){
-  $("adArte").innerHTML=edificio(P.n,antes>=0&&P.n>antes?P.n-1:-1);
   $("adTit").textContent=P.n===0?"El edificio en planos":(P.n===6?"Edificio terminado":"Bloque "+P.n+" de 6 · "+B[P.n-1].nom+": "+B[P.n-1].sub);
   $("adEstado").textContent="En la pantalla: "+(P.vista==="nube"?"la nube de palabras":(P.vista==="resultados"?"los resultados del bloque "+P.n:"el edificio"))+(P.clave?" + palabra clave":"");
   $("adSig").disabled=P.n>=6;$("adAtras").disabled=P.n<=0;
@@ -939,6 +1005,18 @@ $("adAbrir").addEventListener("click",function(){
 
 /* pantalla de proyección */
 function verPantalla(){leerP();ir("p-pantalla");pintarPantalla(-1);despertar()}
+function pintarFranja(){
+  var hay=CLAVES&&(P.n>0||P.clave),h="";
+  if(hay){
+    h='<span class="et2">Palabras</span>';
+    for(var i=0;i<6;i++){
+      var nueva=P.clave&&i===P.n;
+      if(i<P.n||nueva)h+='<span class="pal'+(nueva?' nueva':'')+'"><small>'+(i+1)+' · '+esc(B[i].nom)+'</small><b>'+esc(CLAVES[i])+'</b></span>';
+    }
+  }
+  $("panPal").innerHTML=h;$("panPal").hidden=!hay;
+  $("p-pantalla").classList.toggle("con-palabras",!!hay);
+}
 function pintarPantalla(antes){
   var nube=P.vista==="nube"&&P.n>=1,res=P.vista==="resultados"&&P.n>=1;
   $("panArte").hidden=nube||res;$("panNube").hidden=!nube;$("panRes").hidden=!res;
@@ -946,6 +1024,7 @@ function pintarPantalla(antes){
   if(nube){cargarNube();clearInterval(nubeTmr);nubeTmr=setInterval(cargarNube,4000)}else{clearInterval(nubeTmr)}
   if(res){cargarRes();clearInterval(resTmr);resTmr=setInterval(cargarRes,4000)}else{clearInterval(resTmr)}
   aplicarTema(P.tema);
+  pintarFranja();
   var ver=P.clave&&P.n<6&&CLAVES;
   $("panClave").hidden=!ver;
   if(ver){$("panClaveEt").textContent="Palabra clave · bloque "+(P.n+1);$("panClaveTx").textContent=CLAVES[P.n]}
@@ -976,7 +1055,7 @@ function resEjemplo(){
   return {total:212,uso:{"Todavía no la uso":31,"La he probado algunas veces":88,"La uso casi todas las semanas":61,"Es parte de mis cursos o de mi trabajo":32},
     leccion:{"Aprovechar la infraestructura que ya tenemos":54,"Proteger los datos antes de adoptar herramientas":47,"Integrar la IA en los programas que ya existen":71,"Formar habilidades blandas junto a las técnicas":33},
     columna:{"Centrado en las personas":38,"Equidad e inclusión":29,"Propósito pedagógico":52,"Transparencia y protección de datos":41,"Seguridad y resiliencia":18,"Uso crítico":27},
-    asiste:{bien:690,tot:780,personas:195},evaluar:{bien:520,tot:760,personas:190},semaforo:{bien:640,tot:744,personas:186},
+    asiste:{bien:690,tot:780,personas:195},asiste_items:[[180,15],[12,183],[170,25],[20,175]],evaluar_items:[[160,20,6,4],[10,150,25,5],[8,40,130,12],[5,30,25,130]],semaforo_items:[[4,20,162],[170,12,4],[30,140,16],[6,18,162]],evaluar:{bien:520,tot:760,personas:190},semaforo:{bien:640,tot:744,personas:186},
     elementos:{"Alcance y propósito":12,"Principios éticos":21,"Gobernanza de datos":44,"Adquisición y evaluación de herramientas":30,"Uso aceptable":58,"Aplicaciones críticas para la seguridad":17,"Desarrollo de capacidades":63,"Gestión de riesgos e incidentes":15,"Roles y responsabilidades":11,"Ciclo de revisión":6}};
 }
 function filas(lista,max,fmt){
@@ -995,6 +1074,12 @@ function pintarRes(d,ejemplo){
     c.l.forEach(function(f){cnt+=f[1]});
     h=filas(c.l,c.m,num);
     $("resCnt").textContent=cnt+(cnt===1?" respuesta":" respuestas");
+  }else if(i===3&&d.asiste_items&&d.asiste_items.length){
+    h=rondas(d);cnt=Math.max((d.asiste||{}).personas|0,(d.evaluar||{}).personas|0);
+    $("resCnt").textContent=cnt+(cnt===1?" persona":" personas");
+  }else if(i===4&&d.semaforo_items&&d.semaforo_items.length){
+    h=semaforos(d);cnt=(d.semaforo||{}).personas|0;
+    $("resCnt").textContent=cnt+(cnt===1?" persona":" personas");
   }else if(i<=4){
     var ks=i===3?[["asiste","Ronda 1 · ¿Asiste o sustituye?"],["evaluar","Ronda 2 · Categorías de evaluación"]]:[["semaforo","Semáforo de datos"]];
     var l=ks.map(function(k){var r=d[k[0]]||{};if((r.personas|0)>cnt)cnt=r.personas|0;return [k[1],r.tot?100*r.bien/r.tot:0]});
@@ -1009,6 +1094,41 @@ function pintarRes(d,ejemplo){
   }
   if(!cnt&&!ejemplo)h='<p class="nube-vacia">Esperando las primeras respuestas…</p>';
   $("resBarras").innerHTML=h;
+}
+var CORTO={asiste:["Explicar de otra forma un concepto","Bitácora completa redactada por la IA","Caso de un cliente difícil para practicar","Copiar el diagnóstico sin revisar el equipo"],
+  evaluar:["Prueba práctica de soldadura","Ordenar ideas del informe, declarando el uso","Interpretar un tablero de datos con IA","Retroalimentación revisada por el docente"],
+  semaforo:["Lista con nombres, cédulas y notas","Ideas para una actividad, sin datos","Fotos de estudiantes para un afiche","Bloqueo eléctrico sin revisar la norma"]};
+var COLR={asiste:["#2C7A4B","#B73A27"],evaluar:["#B73A27","#C98A00","#2F6FAE","#2C7A4B"]};
+function rondas(d){
+  var h='<div class="casos">';
+  [["asiste","Ronda 1 · ¿Asiste o sustituye?"],["evaluar","Ronda 2 · ¿En qué categoría de evaluación va?"]].forEach(function(k){
+    var a=actPor(k[0]),it=d[k[0]+"_items"]||[];
+    h+='<div class="ronda"><p class="res-sub">'+k[1]+'</p><div class="leyenda">'+a.cats.map(function(c,ci){return '<span><i style="background:'+COLR[k[0]][ci]+'"></i>'+esc(c)+'</span>'}).join("")+'</div>';
+    a.items.forEach(function(item,ii){
+      var cs=it[ii]||[],tot=0;cs.forEach(function(x){tot+=x|0});
+      h+='<div class="caso"><span>'+esc(CORTO[k[0]][ii])+' <span class="res-sub" style="font-size:1.6vh">· guía: '+esc(a.cats[item.ok])+'</span></span><div class="apilada">';
+      if(!tot)h+='<span style="flex:1;color:var(--muted)">sin respuestas</span>';
+      a.cats.forEach(function(c,ci){var n=cs[ci]|0;if(!n)return;var p=Math.round(100*n/tot);
+        h+='<span class="'+(ci===item.ok?'ok':'')+'" style="flex:'+n+' 1 0;background:'+COLR[k[0]][ci]+'" title="'+esc(c)+' '+p+' %">'+(ci===item.ok?'✓ ':'')+(p>=7||ci===item.ok?p+' %':'')+'</span>'});
+      h+='</div></div>';
+    });
+    h+='</div>';
+  });
+  return h+'</div>';
+}
+function semaforos(d){
+  var a=actPor("semaforo"),it=d.semaforo_items||[],LUZ=["#2C9A4B","#F2B705","#D0402B"],h='<p class="res-sub">La luz encendida es la respuesta de la guía · los números, lo que eligió la sala</p><div class="semaforos">';
+  a.items.forEach(function(item,ii){
+    var cs=it[ii]||[],tot=0;cs.forEach(function(x){tot+=x|0});
+    var s='<svg viewBox="0 0 120 300" role="img" aria-label="'+esc(CORTO.semaforo[ii])+': la guía dice '+esc(a.cats[item.ok])+'"><rect x="50" y="270" width="20" height="30" fill="var(--concreto-osc)"/><rect x="10" y="4" width="100" height="270" rx="22" fill="#1E2A36"/>';
+    for(var c=0;c<3;c++){var cy=50+c*86,on=c===item.ok,p=tot?Math.round(100*(cs[c]|0)/tot):0;
+      if(on)s+='<circle cx="60" cy="'+cy+'" r="40" fill="'+LUZ[c]+'" opacity=".35"/>';
+      s+='<circle cx="60" cy="'+cy+'" r="31" fill="'+LUZ[c]+'" opacity="'+(on?1:.22)+'"/>';
+      s+='<text x="60" y="'+(cy+8)+'" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-weight="600" font-size="22" fill="'+(on?(c===1?'#2B2000':'#FFFFFF'):'#E8EEF4')+'">'+p+'%</text>';}
+    s+='</svg>';
+    h+='<div class="sem-caso">'+s+'<p>'+esc(CORTO.semaforo[ii])+'</p><span class="guia">Guía: '+esc(a.cats[item.ok])+'</span></div>';
+  });
+  return h+'</div>';
 }
 function cargarRes(){
   if(!CONFIG.ENDPOINT){pintarRes(resEjemplo(),true);$("resEstado").textContent="";return}
@@ -1058,6 +1178,7 @@ function paquete(){
   ["uso","leccion","columna"].forEach(function(k){var a=actPor(k),r=S.resp[k];p[k]=(r!==undefined&&a.ops[r])?a.ops[r].t:""});
   p.preocupa=S.resp.preocupa||"";
   ["asiste","evaluar","semaforo"].forEach(function(k){var a=actPor(k),r=S.resp[k]||{},bien=0,t=0;for(var q in r){if(!a.items[q])continue;t++;if(r[q]===a.items[q].ok)bien++}p[k]=t?bien+"/"+t:""});
+  ["asiste","evaluar","semaforo"].forEach(function(k){var a=actPor(k),r=S.resp[k]||{},s="";for(var q=0;q<a.items.length;q++){s+=(r[q]!==undefined?String(r[q]):"-")}p[k+"_r"]=s});
   for(var i=0;i<3;i++){p["rec"+(i+1)+"_elemento"]=S.recs[i]?S.recs[i].el:"";p["rec"+(i+1)]=S.recs[i]?S.recs[i].tx:""}
   return p;
 }
@@ -1070,7 +1191,6 @@ function sincronizar(espera){
 }
 
 /* ===================== ARRANQUE ===================== */
-$("artePortada").innerHTML=edificio(0,-1);
 function arrancar(){
   var hs=(location.hash||"").toLowerCase();
   if(hs==="#admin"){pedirAcceso("p-admin");return}
