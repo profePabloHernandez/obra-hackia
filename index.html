@@ -56,6 +56,8 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var
 .ctrl{display:flex;gap:4px}
 .ctrl button{background:transparent;border:1px solid var(--line);border-radius:6px;min-width:38px;height:36px;cursor:pointer;font-weight:700}
 .ctrl button:disabled{opacity:.4;cursor:default}
+.ctrl #bTema{display:grid;place-items:center}
+.ctrl #bTema svg{width:18px;height:18px}
 
 main{max-width:760px;margin:0 auto;padding-block:20px 48px}
 .pant{display:flex;flex-direction:column;gap:18px}
@@ -170,6 +172,7 @@ body.ancho main,body.ancho .hbar{max-width:1200px}
 .ad-fila{display:flex;gap:8px;flex-wrap:wrap}
 .ad-fila .btn{flex:1 1 150px;font-size:1.05rem;min-height:48px}
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.seg.seg3{grid-template-columns:1fr 1fr 1fr}
 .seg button{min-height:48px;border-radius:10px;border:2px solid var(--line);background:var(--surface);font-weight:700;cursor:pointer}
 .seg button[aria-pressed="true"]{border-color:var(--plano);background:var(--plano-soft)}
 .seg button:disabled{opacity:.45;cursor:default}
@@ -210,6 +213,14 @@ body.quieto.pantalla{cursor:none}
 .nube-pal span{font-family:var(--f-disp);font-weight:800;line-height:1;transition:font-size .6s ease;overflow-wrap:anywhere}
 .nube-vacia{color:var(--muted);font-size:1.2rem;text-align:center}
 .enviada{display:flex;gap:10px;align-items:center}
+/* resultados en vivo */
+.res{flex:1;display:flex;flex-direction:column;justify-content:center;gap:2.4vh;min-height:0}
+.res-sub{font-family:var(--f-mono);font-size:2.2vh;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.res-fila{display:grid;grid-template-columns:minmax(0,40%) minmax(0,1fr) 11vh;align-items:center;gap:2vh;font-size:3vh;font-weight:700;line-height:1.15}
+.res-bar{height:4.4vh;background:var(--plano-soft);border-radius:1vh;overflow:hidden}
+.res-bar i{display:block;height:100%;background:var(--accent);border-radius:1vh;transition:width .7s ease}
+.res-n{font-family:var(--f-mono);font-weight:600;text-align:right}
+.res.compacta{gap:1.2vh}.res.compacta .res-fila{font-size:2.4vh}.res.compacta .res-bar{height:3vh}
 </style>
 
 <a class="saltar" href="#principal">Saltar al contenido</a>
@@ -220,6 +231,7 @@ body.quieto.pantalla{cursor:none}
     <div class="ctrl">
       <button type="button" id="bMenos" aria-label="Reducir el tamaño del texto">A−</button>
       <button type="button" id="bMas" aria-label="Aumentar el tamaño del texto">A+</button>
+      <button type="button" id="bTema" aria-label="Cambiar a modo oscuro"></button>
     </div>
   </div>
 </header>
@@ -363,12 +375,22 @@ body.quieto.pantalla{cursor:none}
         </div>
       </div>
       <div class="caja">
+        <span class="et">Tema de la pantalla</span>
+        <div class="seg seg3" role="group" aria-label="Tema de la pantalla">
+          <button type="button" id="adTAuto" aria-pressed="true">Automático</button>
+          <button type="button" id="adTClaro" aria-pressed="false">Claro</button>
+          <button type="button" id="adTOsc" aria-pressed="false">Oscuro</button>
+        </div>
+      </div>
+      <div class="caja">
         <span class="et">En la pantalla se ve</span>
-        <div class="seg" role="group" aria-label="Vista de la pantalla">
+        <div class="seg seg3" role="group" aria-label="Vista de la pantalla">
           <button type="button" id="adVEdif" aria-pressed="true">El edificio</button>
           <button type="button" id="adVNube" aria-pressed="false">La nube de palabras</button>
+          <button type="button" id="adVRes" aria-pressed="false">Resultados del bloque</button>
         </div>
-        <p class="nota" id="adNotaNube">La nube se activa después de colocar el bloque 1.</p>
+        <p class="nota" id="adNotaNube">La nube y los resultados se activan después de colocar el bloque 1.</p>
+        <p class="nota" id="adNotaRes" hidden></p>
       </div>
       <div class="caja" id="adCajaClave">
         <span class="et" id="adEtClave">Palabra clave del bloque 1</span>
@@ -381,7 +403,7 @@ body.quieto.pantalla{cursor:none}
       </details>
       <details class="caja">
         <summary class="et">Atajos de teclado en la pantalla</summary>
-        <p class="nota">Si proyecta una sola pantalla duplicada, maneje todo desde la ventana de proyección: → o espacio coloca el siguiente bloque, ← retrocede, N muestra la nube, E el edificio, P muestra u oculta la palabra y F pone pantalla completa.</p>
+        <p class="nota">Si proyecta una sola pantalla duplicada, maneje todo desde la ventana de proyección: → o espacio coloca el siguiente bloque, ← retrocede, N muestra la nube, R los resultados del bloque, E el edificio, P muestra u oculta la palabra y F pone pantalla completa.</p>
       </details>
       <button type="button" class="btn sec" id="adSalir">Cerrar el panel</button>
     </div>
@@ -397,8 +419,14 @@ body.quieto.pantalla{cursor:none}
     <div class="nube-pal" id="nubePal" aria-live="polite"></div>
     <p class="nota" id="nubeEstado"></p>
   </div>
+  <div class="pan-nube" id="panRes" hidden>
+    <div class="nube-cab"><h3 id="resTit">Resultados</h3><span class="nube-cnt" id="resCnt"></span></div>
+    <span class="nube-ej" id="resEj" hidden>Vista de ejemplo · se llena sola cuando la actividad está conectada a la hoja de Google</span>
+    <div class="res" id="resBarras" aria-live="polite"></div>
+    <p class="nota" id="resEstado"></p>
+  </div>
   <div class="pan-clave" id="panClave" hidden><small id="panClaveEt">Palabra clave</small><span id="panClaveTx"></span></div>
-  <div class="pan-ayuda" id="panAyuda">F pantalla completa · → bloque · N nube · E edificio · P palabra</div>
+  <div class="pan-ayuda" id="panAyuda">F pantalla completa · → bloque · N nube · R resultados · E edificio · P palabra · T tema</div>
 </section>
 </main>
 
@@ -413,70 +441,75 @@ var B=[
  {h:"79fec0c4c3321bbf33c4e0a0a7ed7658c731416bd989943b44af843d69807e59",pieza:"Primera piedra",nom:"Cimientos",sub:"¿Por qué una política?",
   intro:"Ningún edificio empieza por el techo. Antes de levantar paredes se estudia el terreno y se echan las bases.",
   conc:"Una política sostiene, no prohíbe",
-  texto:"<p>La IA ya está en las aulas del INA, con política o sin ella. La política da un piso común: hacia dónde vamos y por qué. Se apoya en tres bases:</p><ul class=\"principios\"><li>La Estrategia Nacional de IA, que pide al INA llegar al 80 % del personal docente capacitado en IA en 2027.</li><li>El Plan Estratégico Institucional 2026-2032.</li><li>La guía de UNESCO-UNEVOC para integrar la IA en la educación técnica (2026).</li></ul>",
-  act:[{tipo:"opcion",id:"uso",q:"Hoy, ¿cómo usa la IA en su docencia?",
+  texto:"<p>La IA ya está en las aulas del INA, con política o sin ella. Toda tecnología nueva genera <strong>fricción</strong>: hay quien la adopta sin criterio y quien la rechaza sin conocerla. La política da un piso común: hacia dónde vamos y por qué. Se apoya en tres bases:</p><ul class=\"principios\"><li>La Estrategia Nacional de IA, que pide al INA llegar al 80 % del personal docente capacitado en IA en 2027.</li><li>El Plan Estratégico Institucional 2026-2032.</li><li>La guía de UNESCO-UNEVOC para integrar la IA en la educación técnica (2026).</li></ul>",
+  act:[{tipo:"opcion",id:"uso",q:"Hoy, ¿cómo usa la IA en su trabajo?",
         ops:[{t:"Todavía no la uso",fb:"Su piedra también cuenta: esta política es para usted tanto como para quien la usa a diario."},
              {t:"La he probado algunas veces",fb:"Como la mayoría de la sala. La política le va a dar reglas claras para pasar de probar a usar con propósito."},
              {t:"La uso casi todas las semanas",fb:"Usted ya sabe dónde están los huecos. Guárdelos para el último bloque: ahí van sus recomendaciones."},
-             {t:"Es parte de mis cursos",fb:"Su experiencia es material de construcción. En el bloque 6 la vamos a necesitar."}]},
+             {t:"Es parte de mis cursos o de mi trabajo",fb:"Su experiencia es material de construcción. En el bloque 6 la vamos a necesitar."}]},
        {tipo:"palabra",id:"preocupa",q:"En una palabra: ¿qué le preocupa de la IA en el aula?",ph:"Una palabra"}],
   par:"Cuéntele a la persona de al lado la palabra que escribió y por qué.",
-  t:"2 minutos"},
+  t:"4 minutos"},
 
- {h:"dc2100ab5e706fdfca8b276e1e09565f0c5b516118ec0231ecaf206a09709640",pieza:"Varilla",nom:"Columnas",sub:"Los principios",
-  intro:"Las columnas no se ven cuando el edificio está terminado, pero son las que aguantan el peso cuando tiembla.",
-  conc:"Seis principios cargan el peso",
-  texto:"<ol class=\"principios\"><li>Centrado en las personas</li><li>Equidad, inclusión y no discriminación</li><li>Propósito pedagógico</li><li>Transparencia, rendición de cuentas y protección de datos</li><li>Seguridad, sostenibilidad y resiliencia</li><li>Uso crítico</li></ol><p>Todo se resume en una idea: <strong>la IA asiste, el docente decide</strong>.</p>",
-  act:[{tipo:"opcion",id:"columna",q:"Si el INA solo pudiera reforzar una columna este año, ¿cuál sería?",
-        ops:[{t:"Centrado en las personas",fb:"Reforzó la columna de las personas: la tecnología se adapta a quien aprende y a quien enseña, no al revés."},
+ {h:"dc2100ab5e706fdfca8b276e1e09565f0c5b516118ec0231ecaf206a09709640",pieza:"Varilla",nom:"Columnas",sub:"Lo que aprendimos afuera",
+  intro:"La varilla de una columna se trae de afuera, pero sostiene el edificio desde adentro.",
+  conc:"Tres viajes, tres lecciones",
+  texto:"<ul class=\"principios\"><li><strong>China 2023, Beijing y Shenzhen:</strong> la nube y el Internet de las cosas en la vida diaria. Lección: sacar más provecho de la infraestructura que ya tenemos.</li><li><strong>China 2024, Shanghai:</strong> gobernanza digital y protección de datos en el gobierno. Lección: los datos se cuidan antes de adoptar la herramienta.</li><li><strong>Malasia 2025, Kuala Lumpur:</strong> el INA presentó la IA en el programa Operador TIC de Sarapiquí, junto al College of the North Atlantic de Canadá. Mismos retos de acceso y conectividad, por causas distintas. Lección: integrar la IA en los programas que ya existen.</li></ul><p>En 2026, este mismo HackIA se presentó en la galería de pósteres BILT de São Paulo.</p>",
+  act:[{tipo:"opcion",id:"leccion",q:"¿Cuál de estas lecciones necesita más su centro o dependencia?",
+        ops:[{t:"Aprovechar la infraestructura que ya tenemos",fb:"Formar a las personas para sacar más de lo que hay, sin esperar equipo nuevo. Es la respuesta al riesgo de infraestructura del PEI."},
+             {t:"Proteger los datos antes de adoptar herramientas",fb:"Como en Shanghai: la gobernanza de datos va primero. Lo retomamos en el bloque 5."},
+             {t:"Integrar la IA en los programas que ya existen",fb:"Como en Sarapiquí y en Canadá: no hace falta un curso nuevo para empezar, se actualiza lo que ya se enseña."},
+             {t:"Formar habilidades blandas junto a las técnicas",fb:"Lo que se vio en Kuala Lumpur: la IA cambia las tareas, y el criterio, la comunicación y la ética pesan más."}]}],
+  par:"Dígale a la persona de al lado cuál eligió y por qué.",
+  t:"4 minutos"},
+
+ {h:"81b1de014bd85e923a9f6564395f1ef86b4f5f7934d807133a41a335c6a3ea4f",pieza:"Ladrillo",nom:"Primer piso",sub:"La guía UNEVOC y sus principios",
+  intro:"Con el primer piso el edificio empieza a tener forma. Para levantarlo hace falta un plano.",
+  conc:"La IA es tan buena como su experiencia",
+  texto:"<p>UNESCO-UNEVOC publicó en 2026 <em>Integrating AI in TVET</em>, una guía práctica para instituciones de formación como el INA. Se construyó con la Red UNEVOC y un grupo de expertos internacional en el que participó el INA. Propone seis principios:</p><ol class=\"principios\"><li>Centrado en las personas</li><li>Equidad, inclusión y no discriminación</li><li>Propósito pedagógico</li><li>Transparencia, rendición de cuentas y protección de datos</li><li>Seguridad, sostenibilidad y resiliencia</li><li>Uso crítico</li></ol><p>En el INA lo resumimos así: <strong>la IA genera; usted verifica y decide</strong>. La IA aporta e inspira, pero quien conoce el oficio descarta lo que no sirve o no es realista.</p>",
+  act:[{tipo:"opcion",id:"columna",q:"Si el INA solo pudiera reforzar un principio este año, ¿cuál sería?",
+        ops:[{t:"Centrado en las personas",fb:"Reforzó a las personas: la tecnología se adapta a quien aprende y a quien enseña, no al revés."},
              {t:"Equidad e inclusión",fb:"Reforzó la equidad: que la IA no abra más la brecha entre regiones, sedes y estudiantes."},
              {t:"Propósito pedagógico",fb:"Reforzó el propósito pedagógico: la IA entra al aula cuando mejora el aprendizaje, no por moda."},
              {t:"Transparencia y protección de datos",fb:"Reforzó la transparencia: decir cuándo se usó IA y cuidar los datos de cada estudiante."},
              {t:"Seguridad y resiliencia",fb:"Reforzó la seguridad: en un taller, un error de la IA puede tener consecuencias físicas."},
              {t:"Uso crítico",fb:"Reforzó el uso crítico: la IA se equivoca con mucha seguridad. Verificar es parte del oficio."}]}],
-  par:"Explíquele a la persona de al lado por qué eligió esa columna. Si eligieron distinto, mejor.",
-  t:"1 minuto"},
+  par:"Explíquele a la persona de al lado por qué eligió ese principio. Si eligieron distinto, mejor.",
+  t:"4 minutos"},
 
- {h:"81b1de014bd85e923a9f6564395f1ef86b4f5f7934d807133a41a335c6a3ea4f",pieza:"Ladrillo",nom:"Primer piso",sub:"La IA en el aula",
-  intro:"El primer piso es donde ocurre la vida del edificio: aquí están los talleres y las aulas.",
-  conc:"La IA genera. Usted verifica y decide.",
-  texto:"<p>Usar la IA con propósito pedagógico empieza con una pregunta: ¿esto apoya el aprendizaje o lo reemplaza? Para pedirle bien las cosas está la guía FORJA: <strong>F</strong>inalidad, <strong>O</strong>rientación, <strong>R</strong>ol y Requerimiento, <strong>J</strong>uicio crítico, <strong>A</strong>cabado.</p>",
-  act:[{tipo:"clasificar",id:"asiste",q:"¿Asiste o sustituye? Toque una opción en cada caso.",cats:["Asiste","Sustituye"],
+ {h:"18f3eb1e33a85c2319c49743a2910c17ca00b80540db22a1c4132d25916f8c5f",pieza:"Viga",nom:"Segundo piso",sub:"¿Cuánta IA en mi taller y en mi evaluación?",
+  intro:"La viga carga el segundo piso. En formación técnica esa carga es decidir cuánta IA cabe en lo que se enseña y en lo que se certifica.",
+  conc:"Hay un paso que la persona estudiante nunca delega",
+  texto:"<p>Antes de usar la IA, una pregunta: ¿esto <strong>asiste</strong> el aprendizaje o lo <strong>sustituye</strong>? La fricción del taller (practicar, equivocarse, repetir) también enseña.</p><p>En la evaluación, la guía UNEVOC propone cuatro categorías:</p><ul class=\"principios\"><li><strong>Excluida:</strong> no se permite la IA. La prueba debe mostrar desempeño propio o criterio de seguridad.</li><li><strong>Permitida:</strong> se usa para fines definidos, declarando cómo se usó.</li><li><strong>Integrada:</strong> usar la IA es parte de la competencia, porque así se trabaja en el oficio.</li><li><strong>Habilitante:</strong> la usa la persona docente para diseñar o retroalimentar, y la decisión final es humana.</li></ul><p>En todas hay un <strong>ancla no delegable</strong>: el paso que la persona hace por sí misma.</p>",
+  act:[{tipo:"clasificar",id:"asiste",q:"Ronda 1. ¿Asiste o sustituye? Toque una opción en cada caso.",cats:["Asiste","Sustituye"],
         items:[{t:"Un estudiante le pide a la IA que le explique de otra forma un concepto que no entendió en clase.",ok:0,fb:"Asiste: el estudiante sigue haciendo el esfuerzo de entender, la IA le da otra entrada."},
                {t:"La IA redacta la bitácora de práctica completa y el estudiante la entrega como propia.",ok:1,fb:"Sustituye: la bitácora existe para que el estudiante reflexione sobre su práctica. Aquí no aprendió nada."},
                {t:"El docente genera con IA un caso de un cliente difícil para que el grupo practique servicio al cliente.",ok:0,fb:"Asiste: el docente diseña y revisa el caso, el grupo practica. La IA ahorra tiempo de preparación."},
-               {t:"Un estudiante copia el diagnóstico que dio la IA sin revisar el equipo.",ok:1,fb:"Sustituye, y es riesgoso: en formación técnica la competencia es diagnosticar con las manos y el criterio."}]}],
-  par:"Piense en un curso suyo: ¿dónde le ayudaría la IA a preparar mejor una clase? Compártalo.",
-  t:"2 minutos"},
-
- {h:"18f3eb1e33a85c2319c49743a2910c17ca00b80540db22a1c4132d25916f8c5f",pieza:"Viga",nom:"Segundo piso",sub:"Evaluar en tiempos de IA",
-  intro:"Para subir un piso hace falta una viga que resista. En formación técnica esa viga es la evaluación: la que certifica que la persona sí sabe hacer el trabajo.",
-  conc:"Cuatro formas de que la IA entre, o no, a la evaluación",
-  texto:"<ul class=\"principios\"><li><strong>Excluida:</strong> no se permite la IA. La prueba debe mostrar desempeño propio o criterio de seguridad.</li><li><strong>Permitida:</strong> se usa para fines definidos, declarando cómo se usó.</li><li><strong>Integrada:</strong> usar la IA es parte de la competencia que se evalúa, porque así se trabaja en el oficio.</li><li><strong>Habilitante:</strong> la usa la persona docente para diseñar, retroalimentar o dar seguimiento, y la decisión final siempre es humana.</li></ul>",
-  act:[{tipo:"clasificar",id:"evaluar",q:"¿En qué categoría va cada caso?",cats:["Excluida","Permitida","Integrada","Habilitante"],
+               {t:"Un estudiante copia el diagnóstico que dio la IA sin revisar el equipo.",ok:1,fb:"Sustituye, y es riesgoso: en formación técnica la competencia es diagnosticar con las manos y el criterio."}]},
+       {tipo:"clasificar",id:"evaluar",q:"Ronda 2. ¿En qué categoría de evaluación va cada caso?",cats:["Excluida","Permitida","Integrada","Habilitante"],
         items:[{t:"Prueba práctica supervisada de soldadura por arco.",ok:0,fb:"Excluida: se evalúa la destreza manual y el criterio de seguridad de la persona, sin intermediarios."},
                {t:"El estudiante usa IA para ordenar las ideas de su informe y declara cómo la usó.",ok:1,fb:"Permitida: hay un fin definido y transparencia. Lo que se evalúa sigue siendo su comprensión."},
                {t:"En un curso de análisis de datos se evalúa que el estudiante interprete un tablero con apoyo de IA.",ok:2,fb:"Integrada: en ese puesto de trabajo usar la IA con criterio es parte de la competencia."},
                {t:"El docente usa IA para redactar un borrador de retroalimentación y lo revisa antes de enviarlo.",ok:3,fb:"Habilitante: la IA apoya al docente, pero quien revisa y decide es la persona."}]}],
   par:"¿Cuál de sus evaluaciones actuales tendría que cambiar primero? Coméntelo.",
-  t:"2 minutos"},
+  t:"4 minutos"},
 
- {h:"b58b47e8854b1057fb4bbdaeb2bab95f2235dd19a20894023f97c3a0bf1b6262",pieza:"Tubería",nom:"Instalaciones",sub:"Datos, privacidad y seguridad",
+ {h:"b58b47e8854b1057fb4bbdaeb2bab95f2235dd19a20894023f97c3a0bf1b6262",pieza:"Tubería",nom:"Instalaciones",sub:"Datos y juicio crítico",
   intro:"Los cables y las tuberías van por dentro de las paredes. Nadie los ve, hasta que fallan.",
   conc:"Lo que entra a la IA ya no es solo suyo",
-  texto:"<p>La Ley 8968 protege los datos personales. Nombres, cédulas, notas o fotos de estudiantes no se pegan en herramientas comerciales sin autorización. Y en los oficios con riesgo físico, como electricidad, maquinaria o salud, la última verificación la hace siempre una persona contra la norma técnica.</p>",
+  texto:"<p>La Ley 8968 protege los datos personales. Nombres, cédulas, notas o fotos de estudiantes no se pegan en herramientas comerciales sin autorización: se quitan los datos que identifican o se usan datos ficticios. En los oficios con riesgo físico, la última verificación la hace siempre una persona contra la norma técnica.</p><p>La otra instalación es la <strong>J</strong> de FORJA, el juicio crítico: la IA inventa datos y fuentes con mucha seguridad. Y si algo sale mal, se avisa y se registra. Ese procedimiento todavía no existe en el INA: la política debe crearlo.</p>",
   act:[{tipo:"clasificar",id:"semaforo",q:"Semáforo: ¿verde, amarillo o rojo?",cats:["Verde","Amarillo","Rojo"],
-        items:[{t:"Pedirle a la IA ideas para una actividad de clase, sin datos de estudiantes.",ok:0,fb:"Verde: no hay datos personales y usted decide qué ideas usa."},
-               {t:"Pegar la lista del grupo con nombres, cédulas y notas para que la IA calcule promedios.",ok:2,fb:"Rojo: son datos personales en una herramienta externa. Para promedios basta una hoja de cálculo."},
+        items:[{t:"Un docente pega la lista de su grupo, con nombres, cédulas y notas, para que la IA le redacte un comentario por estudiante.",ok:2,fb:"Rojo: son datos personales en una herramienta externa. Lo correcto: quitar nombres y cédulas, o usar datos ficticios, y trabajar en una herramienta autorizada."},
+               {t:"Pedirle a la IA ideas para una actividad de clase, sin datos de estudiantes.",ok:0,fb:"Verde: no hay datos personales y usted decide qué ideas usa."},
                {t:"Subir fotos de estudiantes en el taller para crear un afiche del curso.",ok:1,fb:"Amarillo: solo con el consentimiento de cada persona y en una herramienta autorizada."},
                {t:"Seguir el procedimiento de bloqueo eléctrico que propuso la IA sin revisarlo contra la norma.",ok:2,fb:"Rojo: en un oficio crítico para la seguridad, la IA puede orientar, pero no reemplaza la norma ni la supervisión."}]}],
   par:"¿Alguna vez ha pegado en una IA algo que ahora sabe que no debía? Sin nombres, cuéntelo.",
-  t:"2 minutos"},
+  t:"4 minutos"},
 
  {h:"3b3ca70fa5c260e253292bd159c43b22528eff07b3891f5e9129e7ed7bfda32e",pieza:"Teja",nom:"Techo",sub:"La política la terminamos juntos",
-  intro:"El techo cierra el edificio y lo protege. Esta política no la termina una oficina: la terminan las personas que dan clases todos los días.",
+  intro:"El techo cierra el edificio y lo protege. Esta política no la termina una oficina: la terminan las personas que trabajan en el INA todos los días.",
   conc:"Sus recomendaciones son las tejas",
-  texto:"<p>Una política necesita quién la cuide: un comité, roles claros, capacitación y un ciclo de revisión. Cada recomendación suya se ordena en uno de los diez elementos mínimos de una política institucional de IA que propone UNESCO-UNEVOC. Con ellas se escribe el primer borrador.</p>",
+  texto:"<p>El II Seminario-Taller «Nuevos Empleos y Tecnologías Emergentes» (INA con OIT/Cinterfor, 2025) ya recomendó formar en IA con enfoque pedagógico y ético, crear un repositorio de prompts validados, probar antes de escalar y no depender de plataformas comerciales.</p><p>Ahora faltan sus reglas. Una buena política quita la fricción innecesaria, como no saber qué está permitido, y conserva la que enseña. Cada recomendación se ordena en uno de los diez elementos mínimos de una política institucional de IA (UNESCO-UNEVOC) y es insumo del primer borrador, que se trabaja en el aula virtual durante las dos semanas siguientes al evento.</p><p><strong>Ejemplo:</strong> Gobernanza de datos · «El INA debería publicar una lista de herramientas de IA aprobadas para trabajar con información de estudiantes.»</p>",
   act:[{tipo:"tejas",id:"recs",q:"Escriba una recomendación para la política de IA del INA. Puede colocar hasta tres tejas."}],
   par:"Lea en voz baja su recomendación a la persona de al lado. ¿Se entiende? ¿Se puede aplicar?",
   t:"4 minutos"}
@@ -497,6 +530,29 @@ function aplicarEsc(){document.documentElement.style.setProperty("--e",ESC[iEsc]
 $("bMenos").addEventListener("click",function(){if(iEsc>0){iEsc--;aplicarEsc()}});
 $("bMas").addEventListener("click",function(){if(iEsc<ESC.length-1){iEsc++;aplicarEsc()}});
 aplicarEsc();
+
+/* ===================== TEMA CLARO / OSCURO ===================== */
+var LUNA='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="currentColor"/></svg>';
+var SOL='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g></svg>';
+var temaPersonal=null,temaHost=document.documentElement.getAttribute("data-theme");
+try{var tg=localStorage.getItem("obra-tema");if(tg==="dark"||tg==="light")temaPersonal=tg}catch(e){}
+function temaSistema(){try{return matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}catch(e){return "light"}}
+function aplicarTema(t){
+  var r=document.documentElement;
+  if(t==="dark"||t==="light")r.setAttribute("data-theme",t);
+  else if(temaHost)r.setAttribute("data-theme",temaHost);else r.removeAttribute("data-theme");
+  var ef=(t==="dark"||t==="light")?t:(temaHost||temaSistema());
+  $("bTema").innerHTML=ef==="dark"?SOL:LUNA;
+  $("bTema").setAttribute("aria-label",ef==="dark"?"Cambiar a modo claro":"Cambiar a modo oscuro");
+}
+$("bTema").addEventListener("click",function(){
+  var ef=temaPersonal||temaHost||temaSistema();
+  temaPersonal=ef==="dark"?"light":"dark";
+  try{localStorage.setItem("obra-tema",temaPersonal)}catch(e){}
+  aplicarTema(temaPersonal);
+});
+try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",function(){if(!document.body.classList.contains("pantalla"))aplicarTema(temaPersonal)})}catch(e){}
+aplicarTema(temaPersonal);
 
 /* ===================== EDIFICIO ===================== */
 /* n = bloques colocados (0 a 6). nuevo = índice del bloque que acaba de colocarse (se anima). */
@@ -598,6 +654,7 @@ function ir(id){
   var ps=document.querySelectorAll(".pant");
   for(var i=0;i<ps.length;i++){ps[i].hidden=(ps[i].id!==id)}
   document.body.classList.toggle("pantalla",id==="p-pantalla");document.body.classList.toggle("ancho",id==="p-admin");
+  aplicarTema(id==="p-pantalla"?P.tema:temaPersonal);
   window.scrollTo(0,0);
   var h=document.querySelector("#"+id+" h1, #"+id+" h2");
   if(h){h.setAttribute("tabindex","-1");try{h.focus({preventScroll:true})}catch(e){}}
@@ -828,13 +885,13 @@ $("bPinSalir").addEventListener("click",salirFacilitador);
 function salirFacilitador(){try{history.replaceState(null,"",location.pathname+location.search)}catch(e){location.hash=""}arrancar()}
 
 /* estado compartido entre el panel y la pantalla (misma computadora) */
-var P={n:0,vista:"edificio",clave:false};
-function leerP(){try{var v=JSON.parse(localStorage.getItem("obra-proy"));if(v&&typeof v==="object"){P.n=Math.max(0,Math.min(6,v.n|0));P.vista=v.vista==="nube"?"nube":"edificio";P.clave=!!v.clave}}catch(e){}}
+var P={n:0,vista:"edificio",clave:false,tema:"auto"};
+function leerP(){try{var v=JSON.parse(localStorage.getItem("obra-proy"));if(v&&typeof v==="object"){P.n=Math.max(0,Math.min(6,v.n|0));P.vista=(v.vista==="nube"||v.vista==="resultados")?v.vista:"edificio";P.clave=!!v.clave;P.tema=(v.tema==="dark"||v.tema==="light")?v.tema:"auto"}}catch(e){}}
 function guardarP(){try{localStorage.setItem("obra-proy",JSON.stringify(P))}catch(e){}}
 function cambiar(f){leerP();var antes=P.n;f();if(P.n<1)P.vista="edificio";if(P.n>=6)P.clave=false;guardarP();refrescar(antes)}
 function siguiente(){cambiar(function(){if(P.n<6){P.n++;P.clave=false}})}
 function anterior(){cambiar(function(){if(P.n>0){P.n--;P.clave=false}})}
-function vista(v){cambiar(function(){if(v==="nube"&&P.n<1)return;P.vista=v})}
+function vista(v){cambiar(function(){if((v==="nube"||v==="resultados")&&P.n<1)return;P.vista=v})}
 function alternarClave(){cambiar(function(){if(P.n<6)P.clave=!P.clave})}
 function refrescar(antes){
   if(!$("p-admin").hidden)pintarAdmin(antes);
@@ -846,12 +903,17 @@ function verAdmin(){leerP();pintarAdmin(-1);ir("p-admin")}
 function pintarAdmin(antes){
   $("adArte").innerHTML=edificio(P.n,antes>=0&&P.n>antes?P.n-1:-1);
   $("adTit").textContent=P.n===0?"El edificio en planos":(P.n===6?"Edificio terminado":"Bloque "+P.n+" de 6 · "+B[P.n-1].nom+": "+B[P.n-1].sub);
-  $("adEstado").textContent="En la pantalla: "+(P.vista==="nube"?"la nube de palabras":"el edificio")+(P.clave?" + palabra clave":"");
+  $("adEstado").textContent="En la pantalla: "+(P.vista==="nube"?"la nube de palabras":(P.vista==="resultados"?"los resultados del bloque "+P.n:"el edificio"))+(P.clave?" + palabra clave":"");
   $("adSig").disabled=P.n>=6;$("adAtras").disabled=P.n<=0;
   $("adSig").textContent=P.n>=6?"Edificio terminado":"Colocar bloque "+(P.n+1)+" ▶";
   $("adVEdif").setAttribute("aria-pressed",String(P.vista==="edificio"));
   $("adVNube").setAttribute("aria-pressed",String(P.vista==="nube"));
   $("adVNube").disabled=P.n<1;$("adNotaNube").hidden=P.n>=1;
+  $("adVRes").setAttribute("aria-pressed",String(P.vista==="resultados"));$("adVRes").disabled=P.n<1;
+  $("adNotaRes").hidden=P.n<1;if(P.n>=1)$("adNotaRes").textContent="Resultados de: "+RES_TIT[P.n-1];
+  $("adTAuto").setAttribute("aria-pressed",String(P.tema==="auto"));
+  $("adTClaro").setAttribute("aria-pressed",String(P.tema==="light"));
+  $("adTOsc").setAttribute("aria-pressed",String(P.tema==="dark"));
   $("adCajaClave").hidden=P.n>=6;
   if(P.n<6&&CLAVES){$("adEtClave").textContent="Palabra clave del bloque "+(P.n+1)+" · "+B[P.n].nom;$("adClave").textContent=CLAVES[P.n]}
   $("adMostrar").textContent=P.clave?"Ocultar de la pantalla":"Mostrar en la pantalla";
@@ -862,7 +924,12 @@ $("adSig").addEventListener("click",siguiente);
 $("adAtras").addEventListener("click",anterior);
 $("adVEdif").addEventListener("click",function(){vista("edificio")});
 $("adVNube").addEventListener("click",function(){vista("nube")});
+$("adVRes").addEventListener("click",function(){vista("resultados")});
 $("adMostrar").addEventListener("click",alternarClave);
+function temaPantalla(t){cambiar(function(){P.tema=t})}
+$("adTAuto").addEventListener("click",function(){temaPantalla("auto")});
+$("adTClaro").addEventListener("click",function(){temaPantalla("light")});
+$("adTOsc").addEventListener("click",function(){temaPantalla("dark")});
 $("adSalir").addEventListener("click",function(){try{sessionStorage.removeItem("obra-pin")}catch(e){}CLAVES=null;salirFacilitador()});
 $("adAbrir").addEventListener("click",function(){
   var url=location.href.split("#")[0]+"#pantalla",w=null;
@@ -873,10 +940,12 @@ $("adAbrir").addEventListener("click",function(){
 /* pantalla de proyección */
 function verPantalla(){leerP();ir("p-pantalla");pintarPantalla(-1);despertar()}
 function pintarPantalla(antes){
-  var nube=P.vista==="nube"&&P.n>=1;
-  $("panArte").hidden=nube;$("panNube").hidden=!nube;
-  if(!nube)$("panArte").innerHTML=edificio(P.n,antes>=0&&P.n>antes?P.n-1:-1);
+  var nube=P.vista==="nube"&&P.n>=1,res=P.vista==="resultados"&&P.n>=1;
+  $("panArte").hidden=nube||res;$("panNube").hidden=!nube;$("panRes").hidden=!res;
+  if(!nube&&!res)$("panArte").innerHTML=edificio(P.n,antes>=0&&P.n>antes?P.n-1:-1);
   if(nube){cargarNube();clearInterval(nubeTmr);nubeTmr=setInterval(cargarNube,4000)}else{clearInterval(nubeTmr)}
+  if(res){cargarRes();clearInterval(resTmr);resTmr=setInterval(cargarRes,4000)}else{clearInterval(resTmr)}
+  aplicarTema(P.tema);
   var ver=P.clave&&P.n<6&&CLAVES;
   $("panClave").hidden=!ver;
   if(ver){$("panClaveEt").textContent="Palabra clave · bloque "+(P.n+1);$("panClaveTx").textContent=CLAVES[P.n]}
@@ -887,7 +956,9 @@ document.addEventListener("keydown",function(ev){
   if(k==="arrowright"||k===" "||k==="pagedown"){ev.preventDefault();siguiente()}
   else if(k==="arrowleft"||k==="pageup"){ev.preventDefault();anterior()}
   else if(k==="n")vista("nube");
+  else if(k==="r")vista("resultados");
   else if(k==="e")vista("edificio");
+  else if(k==="t"){var ef=(P.tema==="dark"||P.tema==="light")?P.tema:temaSistema();temaPantalla(ef==="dark"?"light":"dark")}
   else if(k==="p")alternarClave();
   else if(k==="f"){try{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen().catch(function(){})}catch(e){}}
   else if(k==="escape"&&!document.fullscreenElement){}
@@ -896,6 +967,56 @@ document.addEventListener("keydown",function(ev){
 var tQuieto=null;
 function despertar(){document.body.classList.remove("quieto");clearTimeout(tQuieto);tQuieto=setTimeout(function(){document.body.classList.add("quieto")},2500)}
 document.addEventListener("mousemove",function(){if(!$("p-pantalla").hidden)despertar()});
+
+/* ===================== RESULTADOS EN VIVO ===================== */
+var resTmr=null;
+var RES_TIT=["Hoy, ¿cómo usa la IA?","La lección que más necesita su centro","El principio que reforzarían primero","Coincidencia con la guía UNEVOC","Semáforo de datos: coincidencia con la guía","Recomendaciones por elemento de la política"];
+function actPor(id){for(var i=0;i<B.length;i++){for(var j=0;j<B[i].act.length;j++){if(B[i].act[j].id===id)return B[i].act[j]}}return null}
+function resEjemplo(){
+  return {total:212,uso:{"Todavía no la uso":31,"La he probado algunas veces":88,"La uso casi todas las semanas":61,"Es parte de mis cursos o de mi trabajo":32},
+    leccion:{"Aprovechar la infraestructura que ya tenemos":54,"Proteger los datos antes de adoptar herramientas":47,"Integrar la IA en los programas que ya existen":71,"Formar habilidades blandas junto a las técnicas":33},
+    columna:{"Centrado en las personas":38,"Equidad e inclusión":29,"Propósito pedagógico":52,"Transparencia y protección de datos":41,"Seguridad y resiliencia":18,"Uso crítico":27},
+    asiste:{bien:690,tot:780,personas:195},evaluar:{bien:520,tot:760,personas:190},semaforo:{bien:640,tot:744,personas:186},
+    elementos:{"Alcance y propósito":12,"Principios éticos":21,"Gobernanza de datos":44,"Adquisición y evaluación de herramientas":30,"Uso aceptable":58,"Aplicaciones críticas para la seguridad":17,"Desarrollo de capacidades":63,"Gestión de riesgos e incidentes":15,"Roles y responsabilidades":11,"Ciclo de revisión":6}};
+}
+function filas(lista,max,fmt){
+  return lista.map(function(f){var w=max>0?Math.round(100*f[1]/max):0;
+    return '<div class="res-fila"><span>'+esc(f[0])+'</span><span class="res-bar"><i style="width:'+w+'%"></i></span><span class="res-n">'+fmt(f[1])+'</span></div>'}).join("");
+}
+function conteo(opciones,datos){var m=0,l=opciones.map(function(t){var n=(datos&&datos[t])|0;if(n>m)m=n;return [t,n]});return {l:l,m:m}}
+function pintarRes(d,ejemplo){
+  var i=Math.max(0,Math.min(5,P.n-1)),h="",cnt=0,c;
+  $("resTit").textContent=RES_TIT[i];$("resEj").hidden=!ejemplo;$("resBarras").className="res";
+  function pct(x){return Math.round(x)+" %"}
+  function num(x){return String(x)}
+  if(i<=2){
+    var id=["uso","leccion","columna"][i],a=actPor(id);
+    c=conteo(a.ops.map(function(o){return o.t}),d[id]);
+    c.l.forEach(function(f){cnt+=f[1]});
+    h=filas(c.l,c.m,num);
+    $("resCnt").textContent=cnt+(cnt===1?" respuesta":" respuestas");
+  }else if(i<=4){
+    var ks=i===3?[["asiste","Ronda 1 · ¿Asiste o sustituye?"],["evaluar","Ronda 2 · Categorías de evaluación"]]:[["semaforo","Semáforo de datos"]];
+    var l=ks.map(function(k){var r=d[k[0]]||{};if((r.personas|0)>cnt)cnt=r.personas|0;return [k[1],r.tot?100*r.bien/r.tot:0]});
+    h='<p class="res-sub">Porcentaje de casos en que la sala coincidió con la guía</p>'+filas(l,100,pct);
+    $("resCnt").textContent=cnt+(cnt===1?" persona":" personas");
+  }else{
+    c=conteo(ELEMENTOS,d.elementos);
+    c.l.forEach(function(f){cnt+=f[1]});
+    c.l.sort(function(x,y){return y[1]-x[1]});
+    h=filas(c.l,c.m,num);$("resBarras").className="res compacta";
+    $("resCnt").textContent=cnt+(cnt===1?" recomendación":" recomendaciones");
+  }
+  if(!cnt&&!ejemplo)h='<p class="nube-vacia">Esperando las primeras respuestas…</p>';
+  $("resBarras").innerHTML=h;
+}
+function cargarRes(){
+  if(!CONFIG.ENDPOINT){pintarRes(resEjemplo(),true);$("resEstado").textContent="";return}
+  fetch(CONFIG.ENDPOINT+"?accion=resumen&t="+Date.now()).then(function(r){return r.json()}).then(function(d){
+    if(!d||d.ok===true&&d.total===undefined){throw new Error("script-viejo")}
+    pintarRes(d,false);$("resEstado").textContent="Se actualiza solo cada pocos segundos.";
+  }).catch(function(e){$("resEstado").textContent=e&&e.message==="script-viejo"?"La hoja todavía tiene el script anterior: pegue la versión nueva de Codigo.gs.":"No hay conexión con la hoja. Se vuelve a intentar solo."});
+}
 
 /* ===================== NUBE DE PALABRAS ===================== */
 var nubeTmr=null;
@@ -934,10 +1055,9 @@ if(/claude|anthropic/i.test(location.hostname)||location.protocol==="file:"||loc
 var tEnvio=null;
 function paquete(){
   var p={id:S.id,ur:S.ur,area:(S.tipo?S.tipo+" · ":"")+S.area,avance:(S.cerrados+1)+"/6",compromiso:S.comp||""};
-  p.uso=S.resp.uso!==undefined?B[0].act[0].ops[S.resp.uso].t:"";
+  ["uso","leccion","columna"].forEach(function(k){var a=actPor(k),r=S.resp[k];p[k]=(r!==undefined&&a.ops[r])?a.ops[r].t:""});
   p.preocupa=S.resp.preocupa||"";
-  p.columna=S.resp.columna!==undefined?B[1].act[0].ops[S.resp.columna].t:"";
-  ["asiste","evaluar","semaforo"].forEach(function(k,ix){var a=B[2+ix].act[0],r=S.resp[k]||{},bien=0,t=0;for(var q in r){t++;if(r[q]===a.items[q].ok)bien++}p[k]=t?bien+"/"+t:""});
+  ["asiste","evaluar","semaforo"].forEach(function(k){var a=actPor(k),r=S.resp[k]||{},bien=0,t=0;for(var q in r){if(!a.items[q])continue;t++;if(r[q]===a.items[q].ok)bien++}p[k]=t?bien+"/"+t:""});
   for(var i=0;i<3;i++){p["rec"+(i+1)+"_elemento"]=S.recs[i]?S.recs[i].el:"";p["rec"+(i+1)]=S.recs[i]?S.recs[i].tx:""}
   return p;
 }
