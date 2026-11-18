@@ -235,6 +235,23 @@ body.pantalla main{max-width:none;padding:0}
 .pan-nube .nube-cab h3{font-size:5.2vh}
 .pan-nube .nube-cnt{font-size:2.4vh}
 .fuegos{position:fixed;inset:0;z-index:60;pointer-events:none}
+.act-em{font-family:var(--f-mono);font-size:1.7vh;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.act-pan{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center}
+.act-cols{display:grid;grid-template-columns:1fr;gap:3vh 5vh}.act-cols.dos{grid-template-columns:1fr 1fr}
+.act-b{display:flex;flex-direction:column;gap:1.6vh}
+.act-q{font-size:3.4vh;font-weight:800;line-height:1.2;margin:0}
+.act-cols.dos .act-q{font-size:2.8vh}
+.act-ops{margin:0;padding-left:5vh;list-style:upper-alpha;display:flex;flex-direction:column;gap:1.2vh;font-size:3vh;line-height:1.25}
+.act-ops li::marker{font-family:var(--f-mono);font-weight:700;color:var(--plano)}
+.act-cols.dos .act-ops,.act-cols.dos .act-items{font-size:2.6vh}
+.act-pal{font-family:var(--f-mono);font-size:3vh;font-weight:600;border:.4vh dashed var(--line);border-radius:1.4vh;padding:3vh;text-align:center;color:var(--muted)}
+.act-cats{display:flex;flex-wrap:wrap;gap:1vh}.act-cats span{color:#FFFFFF;font-weight:800;font-size:2.2vh;padding:.6vh 1.6vh;border-radius:99px}
+.act-items{margin:0;padding-left:4.5vh;display:flex;flex-direction:column;gap:1.2vh;font-size:2.6vh;line-height:1.3}
+.act-items li::marker{font-family:var(--f-mono);font-weight:700;color:var(--plano)}
+.act-sub{font-size:2.3vh;color:var(--muted);margin:0}
+.act-el{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(5,auto);grid-auto-flow:column;gap:1.4vh 4vh}
+.act-el div{display:flex;flex-direction:column;gap:.3vh;border-left:.6vh solid var(--accent);padding:.4vh 0 .4vh 1.6vh}
+.act-el b{font-size:2.4vh}.act-el span{font-size:1.9vh;color:var(--muted);line-height:1.3}
 .casos.una{grid-template-columns:1fr;width:100%;max-width:150vh;margin:0 auto;gap:2vh}.casos.una .caso{font-size:3vh}.casos.una .apilada{height:6vh;border-radius:1.2vh}.casos.una .apilada span{font-size:2.6vh}.casos.una .leyenda{font-size:2.4vh}.casos.una .res-sub{font-size:2.6vh}
 .pan-clave{position:absolute;left:50%;top:12vh;transform:translateX(-50%);z-index:5;background:var(--accent);color:var(--accent-ink);border-radius:2vh;padding:1.6vh 5vh;text-align:center;box-shadow:0 1vh 4vh rgba(13,27,42,.3);white-space:nowrap}
 .pan-clave small{display:block;font-family:var(--f-mono);font-size:2vh;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
@@ -431,13 +448,15 @@ body.quieto.pantalla{cursor:none}
       <p class="ad-estado" id="adEstado"></p>
       <div class="caja">
         <span class="et">En la pantalla se ve</span>
-        <div class="seg seg3" role="group" aria-label="Vista de la pantalla" id="adVistas">
+        <div class="seg" role="group" aria-label="Vista de la pantalla" id="adVistas">
           <button type="button" id="adVEdif" aria-pressed="true">El edificio</button>
           <button type="button" id="adVRes" aria-pressed="false">Resultados del bloque</button>
           <button type="button" id="adVRes2" aria-pressed="false" hidden>Resultados: ronda 2</button>
           <button type="button" id="adVNube" aria-pressed="false">La nube de palabras</button>
+          <button type="button" id="adVAct" aria-pressed="false">La actividad en pantalla</button>
         </div>
-        <p class="nota" id="adNotaNube">Los resultados se activan al colocar el bloque 1. La nube de palabras solo se usa en el bloque 1.</p>
+        <p class="nota" id="adNotaNube">Los resultados y la actividad se activan al colocar el bloque 1. La nube de palabras solo se usa en el bloque 1.</p>
+        <p class="nota">«La actividad en pantalla» proyecta las preguntas del bloque (en el bloque 6, los 10 elementos de la política). Úsela también como plan de emergencia si los celulares no cargan.</p>
         <p class="nota" id="adNotaRes" hidden></p>
       </div>
     </div>
@@ -502,8 +521,12 @@ body.quieto.pantalla{cursor:none}
     <div class="res" id="resBarras" aria-live="polite"></div>
     <p class="nota" id="resEstado"></p>
   </div>
+  <div class="pan-nube" id="panAct" hidden>
+    <div class="nube-cab"><h3 id="actTit">La actividad</h3><span class="act-em">Si el celular falla: responda en papel o a mano alzada</span></div>
+    <div class="act-pan" id="actCuerpo"></div>
+  </div>
   <div class="pan-clave" id="panClave" hidden><small id="panClaveEt">Palabra clave</small><span id="panClaveTx"></span></div>
-  <div class="pan-ayuda" id="panAyuda">F pantalla completa · → bloque · N nube · R resultados · E edificio · P palabra · T tema</div>
+  <div class="pan-ayuda" id="panAyuda">F pantalla completa · P palabra · → bloque · E edificio · R resultados · N nube · A actividad · T tema</div>
 </section>
 </main>
 
@@ -833,9 +856,9 @@ function pintarAct(i){
       var tot=0,bien=0;for(var q in rr){tot++;if(rr[q]===a.items[q].ok)bien++}
       h+='<p class="marcador" id="m-'+key+'">'+(tot===a.items.length?"Coincidió con "+bien+" de "+tot+". Comparta cuál le sorprendió.":"Respondidos: "+tot+" de "+a.items.length)+'</p>';
     }else if(a.tipo==="tejas"){
-      h+='<div class="campo"><span class="lab" id="lEl">1. Elija el elemento de la política para su teja</span><input type="hidden" id="tEl" value=""><div class="elementos" role="radiogroup" aria-labelledby="lEl">'+
-         ELEMENTOS.map(function(e,ei){return '<button type="button" class="elem" role="radio" aria-checked="false" data-el="'+ei+'"><b>'+(ei+1)+'. '+esc(e)+'</b><span>'+esc(RESUMEN_EL[e])+'</span></button>'}).join("")+'</div></div>'+
-         '<div class="campo"><label for="tTx">2. Su recomendación</label><textarea id="tTx" maxlength="400" placeholder="El INA debería…"></textarea></div>'+
+      h+='<div class="campo"><label for="tEl">¿A qué elemento de la política corresponde?</label><select id="tEl"><option value="">Elija un elemento</option>'+
+         ELEMENTOS.map(function(e){return '<option>'+e+'</option>'}).join("")+'</select></div>'+
+         '<div class="campo"><label for="tTx">Su recomendación</label><textarea id="tTx" maxlength="400" placeholder="El INA debería…"></textarea></div>'+
          '<p class="err" id="eTeja" role="alert"></p>'+
          '<button type="button" class="btn sec" id="bTeja"'+(S.recs.length>=3?' disabled':'')+'>Colocar esta teja</button>'+
          '<p class="marcador">Tejas colocadas: '+S.recs.length+' de 3</p><ul class="tejas">'+
@@ -862,13 +885,9 @@ function pintarAct(i){
     S.resp[key]=val;S.enviado=S.enviado||{};S.enviado[key]=val;save();sincronizar(200+Math.random()*2500);
     pintarAct(actual);avisar("Palabra enviada a la nube.");
   })});
-  Array.prototype.forEach.call(c.querySelectorAll(".elem"),function(btn){btn.addEventListener("click",function(){
-    $("tEl").value=ELEMENTOS[+this.getAttribute("data-el")];$("eTeja").textContent="";
-    Array.prototype.forEach.call(c.querySelectorAll(".elem"),function(o){o.setAttribute("aria-checked",String(o===btn))});
-  })});
   var bt=$("bTeja"); if(bt){bt.addEventListener("click",function(){
     var el=$("tEl").value,tx=($("tTx").value||"").trim();
-    if(!el){$("eTeja").textContent="Elija a qué elemento de la política corresponde.";var pe=document.querySelector(".elem");if(pe)pe.focus();return}
+    if(!el){$("eTeja").textContent="Elija a qué elemento de la política corresponde.";$("tEl").focus();return}
     if(tx.length<10){$("eTeja").textContent="Escriba su recomendación en una o dos frases.";$("tTx").focus();return}
     S.recs.push({el:el,tx:tx});save();sincronizar();pintarAct(actual);avisar("Teja colocada.");
   })}
@@ -975,12 +994,12 @@ function salirFacilitador(){try{history.replaceState(null,"",location.pathname+l
 
 /* estado compartido entre el panel y la pantalla (misma computadora) */
 var P={n:0,vista:"edificio",clave:false,tema:"auto",ronda:0,fuegos:0};
-function leerP(){try{var v=JSON.parse(localStorage.getItem("obra-proy"));if(v&&typeof v==="object"){P.n=Math.max(0,Math.min(6,v.n|0));P.vista=(v.vista==="nube"||v.vista==="resultados")?v.vista:"edificio";P.clave=!!v.clave;P.tema=(v.tema==="dark"||v.tema==="light")?v.tema:"auto";P.ronda=v.ronda===1?1:0;P.fuegos=+v.fuegos||0}}catch(e){}}
+function leerP(){try{var v=JSON.parse(localStorage.getItem("obra-proy"));if(v&&typeof v==="object"){P.n=Math.max(0,Math.min(6,v.n|0));P.vista=(v.vista==="nube"||v.vista==="resultados"||v.vista==="actividad")?v.vista:"edificio";P.clave=!!v.clave;P.tema=(v.tema==="dark"||v.tema==="light")?v.tema:"auto";P.ronda=v.ronda===1?1:0;P.fuegos=+v.fuegos||0}}catch(e){}}
 function guardarP(){try{localStorage.setItem("obra-proy",JSON.stringify(P))}catch(e){}}
 function cambiar(f){leerP();var antes=P.n;f();if(P.n<1)P.vista="edificio";if(P.vista==="nube"&&P.n!==1)P.vista="edificio";if(P.n!==4)P.ronda=0;if(P.n>=6)P.clave=false;guardarP();refrescar(antes)}
 function siguiente(){cambiar(function(){if(P.n<6&&P.clave){P.n++;P.clave=false}})}
 function anterior(){cambiar(function(){if(P.n>0){P.n--;P.clave=false}})}
-function vista(v,ronda){cambiar(function(){if((v==="nube"||v==="resultados")&&P.n<1)return;if(v==="nube"&&P.n!==1)return;P.vista=v;if(ronda!==undefined)P.ronda=ronda})}
+function vista(v,ronda){cambiar(function(){if(v!=="edificio"&&P.n<1)return;if(v==="nube"&&P.n!==1)return;P.vista=v;if(ronda!==undefined)P.ronda=ronda})}
 function lanzarFuegos(){cambiar(function(){if(P.n>=6)P.fuegos=Date.now()})}
 function alternarClave(){cambiar(function(){if(P.n<6)P.clave=!P.clave})}
 function refrescar(antes){
@@ -1001,7 +1020,7 @@ window.addEventListener("resize",escalarMini);
 try{new ResizeObserver(escalarMini).observe($("adMini"))}catch(e){}
 function pintarAdmin(antes){
   $("adTit").textContent=P.n===0?"El edificio en planos":(P.n===6?"Edificio terminado":"Bloque "+P.n+" de 6 · "+B[P.n-1].nom+": "+B[P.n-1].sub);
-  $("adEstado").textContent="En la pantalla: "+(P.vista==="nube"?"la nube de palabras":(P.vista==="resultados"?"los resultados del bloque "+P.n+(P.n===4?" (ronda "+(P.ronda+1)+")":""):"el edificio"))+(P.clave?" + palabra clave":"");
+  $("adEstado").textContent="En la pantalla: "+(P.vista==="nube"?"la nube de palabras":(P.vista==="resultados"?"los resultados del bloque "+P.n+(P.n===4?" (ronda "+(P.ronda+1)+")":""):(P.vista==="actividad"?"la actividad del bloque "+P.n:"el edificio")))+(P.clave?" + palabra clave":"");
   $("adSig").disabled=P.n>=6||!P.clave;$("adAtras").disabled=P.n<=0;
   $("adNotaSig").hidden=P.n>=6||P.clave;$("adNotaSig").textContent="Primero muestre en la pantalla la palabra clave del bloque "+(P.n+1)+".";
   $("adFuegos").disabled=P.n<6;$("adNotaFuegos").textContent=P.n<6?"Se activa cuando el edificio está terminado (6 de 6).":"Listo: cada toque lanza una ronda en la pantalla.";
@@ -1013,6 +1032,7 @@ function pintarAdmin(antes){
   $("adVRes").textContent=dos?"Resultados: ronda 1":"Resultados del bloque";
   $("adVRes").setAttribute("aria-pressed",String(P.vista==="resultados"&&(!dos||P.ronda===0)));$("adVRes").disabled=P.n<1;
   $("adVRes2").setAttribute("aria-pressed",String(P.vista==="resultados"&&dos&&P.ronda===1));
+  $("adVAct").setAttribute("aria-pressed",String(P.vista==="actividad"));$("adVAct").disabled=P.n<1;
   $("adNotaRes").hidden=P.n<1;if(P.n>=1)$("adNotaRes").textContent="Resultados de: "+RES_TIT[P.n-1];
   $("adTAuto").setAttribute("aria-pressed",String(P.tema==="auto"));
   $("adTClaro").setAttribute("aria-pressed",String(P.tema==="light"));
@@ -1030,6 +1050,7 @@ $("adVNube").addEventListener("click",function(){vista("nube")});
 $("adVRes").addEventListener("click",function(){vista("resultados",0)});
 $("adVRes2").addEventListener("click",function(){vista("resultados",1)});
 $("adFuegos").addEventListener("click",lanzarFuegos);
+$("adVAct").addEventListener("click",function(){vista("actividad")});
 $("adMostrar").addEventListener("click",alternarClave);
 function temaPantalla(t){cambiar(function(){P.tema=t})}
 $("adTAuto").addEventListener("click",function(){temaPantalla("auto")});
@@ -1057,9 +1078,10 @@ function pintarFranja(){
   $("p-pantalla").classList.toggle("con-palabras",!!hay);
 }
 function pintarPantalla(antes){
-  var nube=P.vista==="nube"&&P.n>=1,res=P.vista==="resultados"&&P.n>=1;
-  $("panArte").hidden=nube||res;$("panNube").hidden=!nube;$("panRes").hidden=!res;
-  if(!nube&&!res)$("panArte").innerHTML=edificio(P.n,antes>=0&&P.n>antes?P.n-1:-1);
+  var nube=P.vista==="nube"&&P.n>=1,res=P.vista==="resultados"&&P.n>=1,act=P.vista==="actividad"&&P.n>=1;
+  $("panArte").hidden=nube||res||act;$("panNube").hidden=!nube;$("panRes").hidden=!res;$("panAct").hidden=!act;
+  if(act)pintarActPan();
+  if(!nube&&!res&&!act)$("panArte").innerHTML=edificio(P.n,antes>=0&&P.n>antes?P.n-1:-1);
   if(nube){cargarNube();clearInterval(nubeTmr);nubeTmr=setInterval(cargarNube,4000)}else{clearInterval(nubeTmr)}
   if(res){cargarRes();clearInterval(resTmr);resTmr=setInterval(cargarRes,4000)}else{clearInterval(resTmr)}
   aplicarTema(P.tema);
@@ -1078,6 +1100,7 @@ document.addEventListener("keydown",function(ev){
   else if(k==="n")vista("nube");
   else if(k==="r"){if(P.n===4&&P.vista==="resultados")vista("resultados",P.ronda?0:1);else vista("resultados",0)}
   else if(k==="e")vista("edificio");
+  else if(k==="a")vista("actividad");
   else if(k==="t"){var ef=(P.tema==="dark"||P.tema==="light")?P.tema:temaSistema();temaPantalla(ef==="dark"?"light":"dark")}
   else if(k==="p")alternarClave();
   else if(k==="f"){try{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen().catch(function(){})}catch(e){}}
@@ -1088,6 +1111,31 @@ var tQuieto=null;
 function despertar(){document.body.classList.remove("quieto");clearTimeout(tQuieto);tQuieto=setTimeout(function(){document.body.classList.add("quieto")},2500)}
 document.addEventListener("mousemove",function(){if(!$("p-pantalla").hidden)despertar()});
 
+
+/* ===================== ACTIVIDAD EN PANTALLA (y plan de emergencia) ===================== */
+var LUZ_SEM=["#2C9A4B","#E0A800","#C9402B"];
+function pintarActPan(){
+  var i=Math.max(0,Math.min(5,P.n-1)),b=B[i],acts=b.act,h="";
+  $("actTit").textContent="Bloque "+P.n+" · "+b.nom+": la actividad";
+  h='<div class="act-cols'+(acts.length>1?' dos':'')+'">';
+  acts.forEach(function(a){
+    h+='<div class="act-b"><p class="act-q">'+esc(a.q)+'</p>';
+    if(a.tipo==="opcion"){
+      h+='<ol class="act-ops">'+a.ops.map(function(o){return '<li>'+esc(o.t)+'</li>'}).join("")+'</ol>';
+    }else if(a.tipo==="palabra"){
+      h+='<div class="act-pal">Una sola palabra</div>';
+    }else if(a.tipo==="clasificar"){
+      var col=a.id==="semaforo"?LUZ_SEM:(COLR[a.id]||[]);
+      h+='<div class="act-cats">'+a.cats.map(function(c,ci){return '<span style="background:'+(col[ci]||"var(--plano)")+'">'+esc(c)+'</span>'}).join("")+'</div>';
+      h+='<ol class="act-items">'+a.items.map(function(it){return '<li>'+esc(it.t)+'</li>'}).join("")+'</ol>';
+    }else if(a.tipo==="tejas"){
+      h+='<p class="act-sub">Elija uno de los 10 elementos de la política (guía UNESCO-UNEVOC) y escriba su recomendación: «El INA debería…»</p><div class="act-el">'+
+        ELEMENTOS.map(function(e,ei){return '<div><b>'+(ei+1)+'. '+esc(e)+'</b><span>'+esc(RESUMEN_EL[e]||"")+'</span></div>'}).join("")+'</div>';
+    }
+    h+='</div>';
+  });
+  $("actCuerpo").innerHTML=h+'</div>';
+}
 
 /* ===================== FUEGOS ARTIFICIALES ===================== */
 function fuegos(){
