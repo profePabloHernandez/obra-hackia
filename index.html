@@ -256,6 +256,16 @@ body.pantalla main{max-width:none;padding:0}
 .pan-clave{position:absolute;left:50%;top:12vh;transform:translateX(-50%);z-index:5;background:var(--accent);color:var(--accent-ink);border-radius:2vh;padding:1.6vh 5vh;text-align:center;box-shadow:0 1vh 4vh rgba(13,27,42,.3);white-space:nowrap}
 .pan-clave small{display:block;font-family:var(--f-mono);font-size:2vh;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
 .pan-clave span{font-family:var(--f-mono);font-weight:600;font-size:12vh;letter-spacing:.16em;line-height:1.1}
+.pan-crono{position:absolute;right:2.5vh;bottom:6vh;z-index:6;background:var(--surface);color:var(--ink);border:.4vh solid var(--accent);border-radius:2vh;padding:1vh 2.6vh;text-align:center;box-shadow:0 1vh 3vh rgba(13,27,42,.22)}
+.pan-crono small{display:block;font-family:var(--f-mono);font-size:1.6vh;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.pan-crono span{display:block;font-family:var(--f-mono);font-size:8vh;font-weight:700;line-height:1.05;font-variant-numeric:tabular-nums}
+.pan-crono.pausa span{opacity:.5}
+.pan-crono.poco{border-color:#C9402B}.pan-crono.poco span{color:#C9402B}
+.pan-crono.fin{background:#C9402B;border-color:#C9402B}.pan-crono.fin span,.pan-crono.fin small{color:#FFFFFF}
+.pan-crono.fin span{animation:parpadeo 1s steps(2) infinite}
+@keyframes parpadeo{50%{opacity:.35}}
+@media (prefers-reduced-motion: reduce){.pan-crono.fin span{animation:none}}
+.ad-crono{font-family:var(--f-mono);font-size:2.4rem;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;margin:2px 0 8px}
 .pan-ayuda{position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:12px;font-family:var(--f-mono);font-size:.8rem;color:var(--muted);background:var(--surface);padding:4px 8px;border-radius:6px;transition:opacity .4s}
 body.quieto .pan-ayuda{opacity:0}
 body.quieto.pantalla{cursor:none}
@@ -480,6 +490,15 @@ body.quieto.pantalla{cursor:none}
         <p class="nota" id="adNotaSig" hidden></p>
       </div>
       <div class="caja">
+        <span class="et">Cronómetro de construcción · 4 minutos</span>
+        <div class="ad-crono" id="adCronoTx">4:00</div>
+        <div class="ad-fila">
+          <button type="button" class="btn" id="adCronoGo">▶ Iniciar</button>
+          <button type="button" class="btn sec" id="adCronoReset">↺ Reiniciar</button>
+        </div>
+        <p class="nota">Se ve abajo a la derecha de la pantalla. Al colocar un bloque nuevo vuelve a 4:00, listo para iniciar. En el último minuto se pone rojo y al llegar a 0 parpadea.</p>
+      </div>
+      <div class="caja">
         <span class="et">Cierre</span>
         <button type="button" class="btn" id="adFuegos" disabled>🎆 Lanzar fuegos artificiales</button>
         <p class="nota" id="adNotaFuegos">Se activa cuando el edificio está terminado (6 de 6).</p>
@@ -490,7 +509,7 @@ body.quieto.pantalla{cursor:none}
       </details>
       <details class="caja">
         <summary class="et">Atajos de teclado en la pantalla</summary>
-        <p class="nota">Si proyecta una sola pantalla duplicada, maneje todo desde la ventana de proyección: P muestra u oculta la palabra, → o espacio coloca el siguiente bloque (solo con la palabra a la vista), ← retrocede, R los resultados (en el bloque 4, R otra vez cambia de ronda), N la nube (solo bloque 1), E el edificio y F pone pantalla completa.</p>
+        <p class="nota">Si proyecta una sola pantalla duplicada, maneje todo desde la ventana de proyección: P muestra u oculta la palabra, C inicia o pausa el cronómetro, → o espacio coloca el siguiente bloque (solo con la palabra a la vista), ← retrocede, R los resultados (en el bloque 4, R otra vez cambia de ronda), N la nube (solo bloque 1), E el edificio y F pone pantalla completa.</p>
       </details>
       <div class="caja">
         <span class="et">Tema de la pantalla</span>
@@ -525,8 +544,9 @@ body.quieto.pantalla{cursor:none}
     <div class="nube-cab"><h3 id="actTit">La actividad</h3><span class="act-em">Si el celular falla: responda en papel o a mano alzada</span></div>
     <div class="act-pan" id="actCuerpo"></div>
   </div>
+  <div class="pan-crono" id="panCrono" hidden><small>Tiempo de construcción</small><span id="panCronoTx">4:00</span></div>
   <div class="pan-clave" id="panClave" hidden><small id="panClaveEt">Palabra clave</small><span id="panClaveTx"></span></div>
-  <div class="pan-ayuda" id="panAyuda">F pantalla completa · P palabra · → bloque · E edificio · R resultados · N nube · A actividad · T tema</div>
+  <div class="pan-ayuda" id="panAyuda">F pantalla completa · P palabra · → bloque · E edificio · R resultados · N nube · A actividad · C cronómetro · T tema</div>
 </section>
 </main>
 
@@ -993,23 +1013,38 @@ $("bPinSalir").addEventListener("click",salirFacilitador);
 function salirFacilitador(){try{history.replaceState(null,"",location.pathname+location.search)}catch(e){location.hash=""}arrancar()}
 
 /* estado compartido entre el panel y la pantalla (misma computadora) */
-var P={n:0,vista:"edificio",clave:false,tema:"auto",ronda:0,fuegos:0};
-function leerP(){try{var v=JSON.parse(localStorage.getItem("obra-proy"));if(v&&typeof v==="object"){P.n=Math.max(0,Math.min(6,v.n|0));P.vista=(v.vista==="nube"||v.vista==="resultados"||v.vista==="actividad")?v.vista:"edificio";P.clave=!!v.clave;P.tema=(v.tema==="dark"||v.tema==="light")?v.tema:"auto";P.ronda=v.ronda===1?1:0;P.fuegos=+v.fuegos||0}}catch(e){}}
+var CRONO_MS=240000;
+var P={n:0,vista:"edificio",clave:false,tema:"auto",ronda:0,fuegos:0,cFin:0,cResto:CRONO_MS,cOn:false};
+function leerP(){try{var v=JSON.parse(localStorage.getItem("obra-proy"));if(v&&typeof v==="object"){P.n=Math.max(0,Math.min(6,v.n|0));P.vista=(v.vista==="nube"||v.vista==="resultados"||v.vista==="actividad")?v.vista:"edificio";P.clave=!!v.clave;P.tema=(v.tema==="dark"||v.tema==="light")?v.tema:"auto";P.ronda=v.ronda===1?1:0;P.fuegos=+v.fuegos||0;P.cFin=+v.cFin||0;P.cResto=(v.cResto===undefined)?CRONO_MS:Math.max(0,Math.min(CRONO_MS,+v.cResto||0));P.cOn=!!v.cOn}}catch(e){}}
 function guardarP(){try{localStorage.setItem("obra-proy",JSON.stringify(P))}catch(e){}}
 function cambiar(f){leerP();var antes=P.n;f();if(P.n<1)P.vista="edificio";if(P.vista==="nube"&&P.n!==1)P.vista="edificio";if(P.n!==4)P.ronda=0;if(P.n>=6)P.clave=false;guardarP();refrescar(antes)}
-function siguiente(){cambiar(function(){if(P.n<6&&P.clave){P.n++;P.clave=false}})}
-function anterior(){cambiar(function(){if(P.n>0){P.n--;P.clave=false}})}
+function siguiente(){cambiar(function(){if(P.n<6&&P.clave){P.n++;P.clave=false;cronoCero()}})}
+function cronoCero(){P.cFin=0;P.cResto=CRONO_MS;P.cOn=false}
+function cronoResto(){return P.cFin?Math.max(0,P.cFin-Date.now()):P.cResto}
+function cronoAlternar(){cambiar(function(){if(P.cFin){P.cResto=Math.max(0,P.cFin-Date.now());P.cFin=0}else{if(P.cResto<=0)P.cResto=CRONO_MS;P.cFin=Date.now()+P.cResto;P.cOn=true}})}
+function cronoReiniciar(){cambiar(cronoCero)}
+function cronoTxt(ms){var t=Math.ceil(ms/1000),m=Math.floor(t/60),x=t%60;return m+":"+(x<10?"0":"")+x}
+var cronoTmr=null;
+function pintarCrono(){
+  var r=cronoResto(),txt=cronoTxt(r);
+  if(!$("p-pantalla").hidden){var c=$("panCrono");c.hidden=!P.cOn;$("panCronoTx").textContent=txt;
+    c.classList.toggle("pausa",!P.cFin&&r>0);c.classList.toggle("poco",r>0&&r<=60000);c.classList.toggle("fin",P.cOn&&r<=0)}
+  if(!$("p-admin").hidden){$("adCronoTx").textContent=txt;$("adCronoGo").textContent=P.cFin?"❚❚ Pausar":(P.cResto<CRONO_MS&&P.cResto>0?"▶ Continuar":"▶ Iniciar")}
+}
+setInterval(function(){if(!$("p-pantalla").hidden||!$("p-admin").hidden)pintarCrono()},250);
+function anterior(){cambiar(function(){if(P.n>0){P.n--;P.clave=false;cronoCero()}})}
 function vista(v,ronda){cambiar(function(){if(v!=="edificio"&&P.n<1)return;if(v==="nube"&&P.n!==1)return;P.vista=v;if(ronda!==undefined)P.ronda=ronda})}
 function lanzarFuegos(){cambiar(function(){if(P.n>=6)P.fuegos=Date.now()})}
 function alternarClave(){cambiar(function(){if(P.n<6)P.clave=!P.clave})}
 function refrescar(antes){
   if(!$("p-admin").hidden)pintarAdmin(antes);
   if(!$("p-pantalla").hidden)pintarPantalla(antes);
+  pintarCrono();
 }
 var fuegosVistos=-1;
 window.addEventListener("storage",function(ev){if(ev.key==="obra-proy"){var antes=P.n;leerP();refrescar(antes)}});
 
-function verAdmin(){leerP();pintarAdmin(-1);ir("p-admin");montarMini()}
+function verAdmin(){leerP();pintarAdmin(-1);ir("p-admin");pintarCrono();montarMini()}
 function montarMini(){
   var f=$("adIframe");
   if(!f.getAttribute("src"))f.setAttribute("src",location.href.split("#")[0]+"#pantalla");
@@ -1050,6 +1085,8 @@ $("adVNube").addEventListener("click",function(){vista("nube")});
 $("adVRes").addEventListener("click",function(){vista("resultados",0)});
 $("adVRes2").addEventListener("click",function(){vista("resultados",1)});
 $("adFuegos").addEventListener("click",lanzarFuegos);
+$("adCronoGo").addEventListener("click",cronoAlternar);
+$("adCronoReset").addEventListener("click",cronoReiniciar);
 $("adVAct").addEventListener("click",function(){vista("actividad")});
 $("adMostrar").addEventListener("click",alternarClave);
 function temaPantalla(t){cambiar(function(){P.tema=t})}
@@ -1064,7 +1101,7 @@ $("adAbrir").addEventListener("click",function(){
 });
 
 /* pantalla de proyección */
-function verPantalla(){leerP();ir("p-pantalla");pintarPantalla(-1);despertar()}
+function verPantalla(){leerP();ir("p-pantalla");pintarPantalla(-1);pintarCrono();despertar()}
 function pintarFranja(){
   var hay=CLAVES&&(P.n>0||P.clave),h="";
   if(hay){
@@ -1101,6 +1138,7 @@ document.addEventListener("keydown",function(ev){
   else if(k==="r"){if(P.n===4&&P.vista==="resultados")vista("resultados",P.ronda?0:1);else vista("resultados",0)}
   else if(k==="e")vista("edificio");
   else if(k==="a")vista("actividad");
+  else if(k==="c")cronoAlternar();
   else if(k==="t"){var ef=(P.tema==="dark"||P.tema==="light")?P.tema:temaSistema();temaPantalla(ef==="dark"?"light":"dark")}
   else if(k==="p")alternarClave();
   else if(k==="f"){try{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen().catch(function(){})}catch(e){}}
