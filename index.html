@@ -889,12 +889,12 @@ function pintarAct(i){
   /* eventos */
   Array.prototype.forEach.call(c.querySelectorAll(".op"),function(btn){btn.addEventListener("click",function(){
     var key=this.getAttribute("data-a"),oi=parseInt(this.getAttribute("data-o"),10);
-    S.resp[key]=oi;save();pintarAct(actual);sincronizar();
+    S.resp[key]=oi;save();pintarAct(actual);sincronizarSuave();
     var f=$("fb-"+key); if(f)avisar(f.textContent);
   })});
   Array.prototype.forEach.call(c.querySelectorAll(".cat"),function(btn){btn.addEventListener("click",function(){
     var key=this.getAttribute("data-a"),ii=this.getAttribute("data-it"),ci=parseInt(this.getAttribute("data-c"),10);
-    S.resp[key]=S.resp[key]||{};S.resp[key][ii]=ci;save();sincronizar();
+    S.resp[key]=S.resp[key]||{};S.resp[key][ii]=ci;save();sincronizarSuave();
     var y=window.scrollY;pintarAct(actual);window.scrollTo(0,y);
   })});
   Array.prototype.forEach.call(c.querySelectorAll('input[id^="w-"]'),function(inp){inp.addEventListener("input",function(){
@@ -1326,20 +1326,59 @@ function paquete(){
   for(var i=0;i<3;i++){p["rec"+(i+1)+"_elemento"]=S.recs[i]?S.recs[i].el:"";p["rec"+(i+1)]=S.recs[i]?S.recs[i].tx:""}
   return p;
 }
+/* Envío a la hoja, pensado para ~300 personas a la vez:
+   - cada envío lleva el estado completo (si uno se pierde, el siguiente lo repone);
+   - los toques dentro de una actividad se agrupan (un envío cada 15-35 s como máximo);
+   - no se reenvía lo que ya llegó; si falla, se reintenta con espera creciente y al azar. */
+var ultimoOk=null,fallos=0,modoNC=false,tReint=null,seguro=null;
+try{ultimoOk=localStorage.getItem("obra-env")}catch(e){}
 function sincronizar(espera){
   if(!CONFIG.ENDPOINT||!S.id||!window.fetch)return;
   clearTimeout(tEnvio);
-  tEnvio=setTimeout(function(){
-    try{fetch(CONFIG.ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(paquete())}).catch(function(){})}catch(e){}
-  },espera!==undefined?espera:800+Math.random()*5000);
+  tEnvio=setTimeout(enviar,espera!==undefined?espera:1000+Math.random()*7000);
 }
+function sincronizarSuave(){
+  if(!CONFIG.ENDPOINT||!S.id||!window.fetch)return;
+  if(tEnvio)return; /* ya hay un envío programado: este toque viaja con él */
+  tEnvio=setTimeout(enviar,15000+Math.random()*20000);
+}
+function enviar(){
+  tEnvio=null;clearTimeout(tReint);
+  var body=JSON.stringify(paquete());
+  if(body===ultimoOk)return;
+  function exito(){ultimoOk=body;fallos=0;try{localStorage.setItem("obra-env",body)}catch(e){}}
+  function reintentar(){
+    fallos++;if(fallos>6)return;
+    tReint=setTimeout(function(){if(!tEnvio)enviar()},(8000+Math.random()*17000)*Math.min(fallos,4));
+  }
+  if(modoNC){
+    /* sin respuesta legible: se da por enviado y se repite una vez, por seguridad, 30-60 s después */
+    try{fetch(CONFIG.ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:body}).then(function(){
+      exito();
+      if(seguro!==body){seguro=body;tReint=setTimeout(function(){if(!tEnvio&&ultimoOk===body){ultimoOk=null;enviar()}},30000+Math.random()*30000)}
+    }).catch(reintentar)}catch(e){reintentar()}
+    return;
+  }
+  try{
+    fetch(CONFIG.ENDPOINT,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:body})
+      .then(function(r){return r.json()})
+      .then(function(j){if(j&&j.ok)exito();else reintentar()})
+      .catch(function(){
+        /* puede ser la red, la cuota de Google o que el navegador no deje leer la respuesta:
+           tras dos fallos seguidos se pasa a envío sin respuesta (como la versión anterior) */
+        if(fallos>=1&&!modoNC){modoNC=true}
+        reintentar();
+      });
+  }catch(e){reintentar()}
+}
+window.addEventListener("online",function(){if(S.id)sincronizar(2000+Math.random()*8000)});
 
 /* ===================== ARRANQUE ===================== */
 function arrancar(){
   var hs=(location.hash||"").toLowerCase();
   if(hs==="#admin"){pedirAcceso("p-admin");return}
   if(hs==="#pantalla"||hs==="#proyector"){pedirAcceso("p-pantalla");return}
-  if(S.ur&&S.area){pintarGafete();verObra()}
+  if(S.ur&&S.area){pintarGafete();verObra();sincronizar(4000+Math.random()*16000)}
   else{$("iUR").value=S.ur||"";$("iArea").value=S.area||"";
     if(S.tipo){var r=document.querySelector('input[name="tipo"][value="'+S.tipo+'"]');if(r)r.checked=true}
     previaGafete();pintarAvance();ir("p-inicio")}
